@@ -2,7 +2,6 @@
 #include <iostream>
 #include <random>
 
-// 子類別定義
 class Monster : public Character {
 public:
     Monster(const std::string& name, int hp, int attack)
@@ -27,28 +26,41 @@ Game::Game() {
 
 Game::~Game() {}
 
+#include <thread>   // 加這行 for sleep
+#include <chrono>   // for chrono::milliseconds
+
+void slowPrint(const std::string& text, int delay = 50) {
+    for (char c : text) {
+        std::cout << c << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    }
+    std::cout << std::endl;
+}
+
 void Game::start() {
-    std::cout << "== 遊戲開始 ==\n";
-    std::cout << "你遇到了怪物：" << monster->getName() << "！\n";
-    std::cout << "怪物HP：" << monster->getHP() << " 攻擊力：" << monster->getAttack() << "\n";
+    slowPrint("== 遊戲開始 ==");
+    slowPrint("你遇到了怪物：" + monster->getName() + "！");
+    slowPrint("怪物HP：" + std::to_string(monster->getHP()) +
+              " 攻擊力：" + std::to_string(monster->getAttack()));
     battle();
 }
 
 void Game::battle() {
     while (player->isAlive() && monster->isAlive()) {
-        std::cout << "\n你攻擊了 " << monster->getName() << "！\n";
+        slowPrint("\n你揮劍攻擊 " + monster->getName() + "！");
         monster->takeDamage(player->getAttack());
-        std::cout << "怪物剩下 HP：" << monster->getHP() << "\n";
+        slowPrint("怪物剩下 HP：" + std::to_string(monster->getHP()));
 
         if (!monster->isAlive()) break;
 
-        std::cout << monster->getName() << " 反擊你！\n";
+        slowPrint(monster->getName() + " 痾啊啊啊啊！");
         player->takeDamage(monster->getAttack());
-        std::cout << "你剩下 HP：" << player->getHP() << "\n";
+        slowPrint("你剩下 HP：" + std::to_string(player->getHP()));
     }
 
     if (player->isAlive())
-        std::cout << "\n你打敗了怪物！勝利！\n";
+        slowPrint("\n你打敗了怪物！勝利！");
     else
-        std::cout << "\n你被怪物擊敗了...\n";
+        slowPrint("\n你被怪物擊敗了...");
 }
+
