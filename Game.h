@@ -2,11 +2,12 @@
 #define GAME_H
 
 #include "Character.h"
+#include <memory>
 
 class Game {
 private:
-    Character* player;
-    Character* monster;
+    std::unique_ptr<Character> player;
+    std::unique_ptr<Character> monster;
 
 public:
     Game();
