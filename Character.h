@@ -11,10 +11,11 @@ protected:
 
 public:
     Character(const std::string& name, int hp, int attack);
-    virtual ~Character() {}
+    virtual ~Character() = default;
 
-    virtual void takeDamage(int dmg);
+    void takeDamage(int dmg);
     bool isAlive() const;
+
     int getAttack() const;
     std::string getName() const;
     int getHP() const;
