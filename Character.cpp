@@ -23,4 +23,3 @@ std::string Character::getName() const {
 int Character::getHP() const {
     return hp;
 }
-
