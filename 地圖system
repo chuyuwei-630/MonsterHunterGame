@@ -1,7 +1,7 @@
 class MapSystem {
 private:
-    static const int SIZE = 5;
-    string grid[SIZE][SIZE];
+    int size;
+    vector<vector<string>> grid;
     map<string, Diamond*> diamondMap;
 
     Diamond* getRandomDiamond() {
@@ -19,16 +19,19 @@ private:
 
 public:
     void generateMap() {
+        // 隨機決定地圖大小（3~7）
+        size = 3 + rand() % 5;
+        grid = vector<vector<string>>(size, vector<string>(size, "[ ]"));
         diamondMap.clear();
-        for (int i = 0; i < SIZE; i++)
-            for (int j = 0; j < SIZE; j++)
-                grid[i][j] = "[ ]";
 
-        for (int i = 0; i < 5; i++) {
+        // 放置 5 顆鑽石（或根據地圖大小調整數量）
+        int diamondCount = min(5, size * size / 2);
+
+        for (int i = 0; i < diamondCount; i++) {
             int x, y;
             do {
-                x = rand() % SIZE;
-                y = rand() % SIZE;
+                x = rand() % size;
+                y = rand() % size;
             } while (grid[x][y] != "[ ]");
 
             grid[x][y] = "[💎]";
@@ -38,15 +41,19 @@ public:
     }
 
     void displayMap() {
-        cout << "🗺 地圖：" << endl;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++)
+        cout << "🗺 地圖尺寸：" << size << " x " << size << endl;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++)
                 cout << grid[i][j] << " ";
             cout << endl;
         }
     }
 
-    void chooseDiamond(Player &player, int x, int y) {
+    int getSize() const {
+        return size;
+    }
+
+    bool chooseDiamond(Player &player, int x, int y) {
         string key = to_string(x) + "," + to_string(y);
         if (diamondMap.find(key) != diamondMap.end()) {
             Diamond* d = diamondMap[key];
@@ -55,8 +62,10 @@ public:
             delete d;
             diamondMap.erase(key);
             grid[x][y] = "[✓]";
+            return true;
         } else {
             cout << "❌ 此處沒有鑽石或已被選取！" << endl;
+            return false;
         }
     }
 };
