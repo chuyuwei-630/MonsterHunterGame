@@ -11,6 +11,7 @@
         "Game.cpp",
         "Character.cpp",
         "GameWithMap.cpp",
+        "Equipment.cpp",
         "-o",
         "main.exe"
       ],

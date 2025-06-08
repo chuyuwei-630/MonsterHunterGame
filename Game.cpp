@@ -8,8 +8,8 @@
 
 class Monster : public Character {
 public:
-    Monster(const std::string& name, int hp, int attack, int scoreValue)
-        : Character(name, hp, attack), scoreValue(scoreValue) {}
+    Monster(const std::string& name, int hp, int attack, int defense, int scoreValue)
+        : Character(name, hp, attack, defense), scoreValue(scoreValue) {}
     int getScoreValue() const { return scoreValue; }
 private:
     int scoreValue;
@@ -17,8 +17,8 @@ private:
 
 class Player : public Character {
 public:
-    Player(const std::string& name, int hp, int attack)
-        : Character(name, hp, attack) {}
+    Player(const std::string& name, int hp, int attack, int defense)
+        : Character(name, hp, attack, defense) {}
     void heal(int amount) {
         hp += amount;
         if (hp > 100) hp = 100;
@@ -48,9 +48,23 @@ public:
             score += value;
             slowPrint("你獲得了積分寶箱，增加 " + std::to_string(value) + " 積分！");
         } else if (type == 4) {
-            auto weapon = std::make_unique<Equipment>("鐵劍", Equipment::WEAPON, 10, 0);
-            player->equip(std::move(weapon));
-            slowPrint("你獲得了一把鐵劍，攻擊力增加 10！");
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> equip_dist(1, 3);
+            int equipType = equip_dist(gen);
+            if (equipType == 1) {
+                auto weapon = std::make_unique<Equipment>("鐵劍", Equipment::WEAPON, 10, 0, 0);
+                player->equip(std::move(weapon));
+                slowPrint("你獲得了一把鐵劍，攻擊力增加 10！");
+            } else if (equipType == 2) {
+                auto armor = std::make_unique<Equipment>("皮甲", Equipment::ARMOR, 0, 10, 5);
+                player->equip(std::move(armor));
+                slowPrint("你獲得了一件皮甲，HP增加 10，防禦力增加 5！");
+            } else {
+                auto accessory = std::make_unique<Equipment>("力量戒指", Equipment::ACCESSORY, 5, 5, 0);
+                player->equip(std::move(accessory));
+                slowPrint("你獲得了一枚力量戒指，攻擊力增加 5，HP增加 5！");
+            }
         }
     }
 private:
@@ -59,7 +73,7 @@ private:
 };
 
 Game::Game() {
-    player = std::make_unique<Player>("杭特", 100, 25);
+    player = std::make_unique<Player>("杭特", 100, 25, 0); // 初始防禦力為 0
     score = 0;
     startTime = std::chrono::steady_clock::now(); // 記錄開始時間
     generateMonster();
@@ -72,20 +86,22 @@ void Game::generateMonster() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> hp_dist(50, 100);
     std::uniform_int_distribution<> attack_dist(10, 25);
+    std::uniform_int_distribution<> defense_dist(0, 5); // 怪物防禦力
     std::uniform_int_distribution<> monster_dist(1, 4);
 
     int hp = hp_dist(gen);
     int atk = attack_dist(gen);
+    int def = defense_dist(gen);
     int monsterType = monster_dist(gen);
 
     if (monsterType == 1)
-        monster = std::make_unique<Monster>("哥布林", hp, atk, 10);
+        monster = std::make_unique<Monster>("哥布林", hp, atk, def, 10);
     else if (monsterType == 2)
-        monster = std::make_unique<Monster>("雷射", hp, atk + 5, 15);
+        monster = std::make_unique<Monster>("雷射", hp, atk + 5, def, 15);
     else if (monsterType == 3)
-        monster = std::make_unique<Monster>("地精", hp, atk, 12);
+        monster = std::make_unique<Monster>("地精", hp, atk, def, 12);
     else
-        monster = std::make_unique<Monster>("巨魔", hp + 20, atk + 10, 20);
+        monster = std::make_unique<Monster>("巨魔", hp + 20, atk + 10, def + 5, 20);
 }
 
 void slowPrint(const std::string& text, int delay) {
@@ -121,7 +137,8 @@ void Game::start() {
         else if (monster->getName() == "巨魔")
             slowPrint("巨魔：我會踩扁你！");
         slowPrint("怪物HP：" + std::to_string(monster->getHP()) +
-                  " 攻擊力：" + std::to_string(monster->getAttack()));
+                  " 攻擊力：" + std::to_string(monster->getAttack()) +
+                  " 防禦力：" + std::to_string(monster->getDefense()));
         battle();
         if (!player->isAlive()) {
             auto endTime = std::chrono::steady_clock::now();
@@ -129,7 +146,7 @@ void Game::start() {
             slowPrint("你被擊敗了！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
             break;
         }
-        std::cout << "選擇行動：1 - 繼續戰鬥, 2 - 進入地圖模式, 3 - 退出遊戲: ";
+        std::cout << "選擇行動：1 - 繼續戰鬥, 2 - 進入地圖模式, 3 - 退出遊戲, 4 - 查看並管理庫存: ";
         int choice;
         std::cin >> choice;
         if (choice == 1) {
@@ -141,6 +158,15 @@ void Game::start() {
             generateMonster();
         } else if (choice == 3) {
             gameRunning = false;
+        } else if (choice == 4) {
+            player->displayInventory();
+            std::cout << "輸入要裝備的庫存編號（或 -1 取消）：";
+            int index;
+            std::cin >> index;
+            if (index >= 0) {
+                player->equipFromInventory(index);
+                slowPrint("已裝備選定的裝備！");
+            }
         } else {
             std::cout << "無效選擇！" << std::endl;
         }
