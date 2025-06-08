@@ -40,7 +40,7 @@ public:
     void apply(Player* player, int& score) {
         if (type == 1) {
             player->heal(value);
-            slowPrint("你獲得了回血寶箱，回復 " + std::to_string(value) + " HP！");
+            slowPrint("你獲得回血寶箱，回復 " + std::to_string(value) + " HP！");
         } else if (type == 2) {
             player->increaseAttack(value);
             slowPrint("你獲得了攻擊力寶箱，攻擊力增加 " + std::to_string(value) + "！");
