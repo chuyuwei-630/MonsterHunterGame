@@ -23,3 +23,7 @@ std::string Character::getName() const {
 int Character::getHP() const {
     return hp;
 }
+
+void Character::increaseAttack(int amount) {
+    attack += amount;
+}
