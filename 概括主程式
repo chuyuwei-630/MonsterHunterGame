@@ -1,0 +1,34 @@
+int main() {
+    srand(time(0));
+    Player player("勇者阿光");
+    MapSystem map;
+
+    while (true) {
+        player.printStatus();
+        map.generateMap();
+        map.displayMap();
+
+        cout << "請輸入你要選擇的鑽石位置 (x y)：";
+        int x, y;
+        cin >> x >> y;
+        if (x < 0 || x >= 5 || y < 0 || y >= 5) {
+            cout << "⚠️ 位置無效，請重新輸入！" << endl;
+            continue;
+        }
+
+        map.chooseDiamond(player, x, y);
+
+        if (player.hp <= 0) {
+            cout << "💀 你已經死亡，遊戲結束。" << endl;
+            break;
+        }
+
+        char cont;
+        cout << "要繼續下一張地圖嗎？(y/n)：";
+        cin >> cont;
+        if (cont != 'y' && cont != 'Y') break;
+    }
+
+    cout << "👋 感謝遊玩，結束！" << endl;
+    return 0;
+}
