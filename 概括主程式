@@ -2,21 +2,35 @@ int main() {
     srand(time(0));
     Player player("勇者阿光");
     MapSystem map;
+    int roundCount = 0;
 
     while (true) {
+        roundCount++;
+        cout << "==========================" << endl;
+        cout << "📦 關卡 " << roundCount << " 開始！" << endl;
+
         player.printStatus();
         map.generateMap();
         map.displayMap();
 
-        cout << "請輸入你要選擇的鑽石位置 (x y)：";
-        int x, y;
-        cin >> x >> y;
-        if (x < 0 || x >= 5 || y < 0 || y >= 5) {
-            cout << "⚠️ 位置無效，請重新輸入！" << endl;
-            continue;
-        }
+        int picks = (roundCount % 5 == 0) ? 2 : 1;
+        cout << "🟢 你可以選擇 " << picks << " 個鑽石！" << endl;
 
-        map.chooseDiamond(player, x, y);
+        int chosen = 0;
+        while (chosen < picks) {
+            cout << "請輸入你要選擇的鑽石位置 (x y)：";
+            int x, y;
+            cin >> x >> y;
+
+            if (x < 0 || x >= map.getSize() || y < 0 || y >= map.getSize()) {
+                cout << "⚠️ 位置無效，請重新輸入！" << endl;
+                continue;
+            }
+
+            if (map.chooseDiamond(player, x, y)) {
+                chosen++;
+            }
+        }
 
         if (player.hp <= 0) {
             cout << "💀 你已經死亡，遊戲結束。" << endl;
@@ -24,7 +38,7 @@ int main() {
         }
 
         char cont;
-        cout << "要繼續下一張地圖嗎？(y/n)：";
+        cout << "要繼續下一關嗎？(y/n)：";
         cin >> cont;
         if (cont != 'y' && cont != 'Y') break;
     }
