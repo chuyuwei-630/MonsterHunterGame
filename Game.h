@@ -4,12 +4,14 @@
 #include "Character.h"
 #include <memory>
 #include <string>
+#include <chrono>
 
 class Game {
 private:
     std::unique_ptr<Character> player;
     std::unique_ptr<Character> monster;
     int score;
+    std::chrono::time_point<std::chrono::steady_clock> startTime; // 計時開始時間
 
 public:
     Game();
@@ -19,10 +21,9 @@ public:
     void battle();
 
 private:
-    void generateMonster();  // 🔧 ← 加這一行來修正編譯錯誤
+    void generateMonster();
 };
 
-// ✅ 正確位置：在 Game 類別「外面」宣告 slowPrint
 void slowPrint(const std::string& text, int delay = 50);
 
 #endif

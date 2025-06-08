@@ -75,3 +75,4 @@ void GameWithMap::start() {
             std::cout << "無效指令！" << std::endl;
         }
     }
+}

@@ -30,11 +30,12 @@ public:
     Treasure() {
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> type_dist(1, 3);
+        std::uniform_int_distribution<> type_dist(1, 4);
         type = type_dist(gen);
         if (type == 1) value = 20; // 回血
         else if (type == 2) value = 5; // 攻擊力
-        else value = 10; // 積分
+        else if (type == 3) value = 10; // 積分
+        else value = 4; // 裝備
     }
     void apply(Player* player, int& score) {
         if (type == 1) {
@@ -43,9 +44,13 @@ public:
         } else if (type == 2) {
             player->increaseAttack(value);
             slowPrint("你獲得了攻擊力寶箱，攻擊力增加 " + std::to_string(value) + "！");
-        } else {
+        } else if (type == 3) {
             score += value;
             slowPrint("你獲得了積分寶箱，增加 " + std::to_string(value) + " 積分！");
+        } else if (type == 4) {
+            auto weapon = std::make_unique<Equipment>("鐵劍", Equipment::WEAPON, 10, 0);
+            player->equip(std::move(weapon));
+            slowPrint("你獲得了一把鐵劍，攻擊力增加 10！");
         }
     }
 private:
@@ -56,6 +61,7 @@ private:
 Game::Game() {
     player = std::make_unique<Player>("杭特", 100, 25);
     score = 0;
+    startTime = std::chrono::steady_clock::now(); // 記錄開始時間
     generateMonster();
 }
 
@@ -95,7 +101,9 @@ void Game::start() {
     bool gameRunning = true;
     while (gameRunning && player->isAlive()) {
         if (score >= 100) {
-            slowPrint("恭喜你！積分達到100，遊戲勝利！");
+            auto endTime = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+            slowPrint("恭喜你！積分達到100，遊戲勝利！遊戲時間：" + std::to_string(duration) + " 秒");
             break;
         }
 
@@ -116,7 +124,9 @@ void Game::start() {
                   " 攻擊力：" + std::to_string(monster->getAttack()));
         battle();
         if (!player->isAlive()) {
-            slowPrint("你被擊敗了！最終分數：" + std::to_string(score));
+            auto endTime = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+            slowPrint("你被擊敗了！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
             break;
         }
         std::cout << "選擇行動：1 - 繼續戰鬥, 2 - 進入地圖模式, 3 - 退出遊戲: ";
@@ -128,14 +138,18 @@ void Game::start() {
             slowPrint("當前血量：" + std::to_string(player->getHP()));
             GameWithMap gameWithMap;
             gameWithMap.start();
-            generateMonster(); // 回來之後重生怪物
+            generateMonster();
         } else if (choice == 3) {
             gameRunning = false;
         } else {
             std::cout << "無效選擇！" << std::endl;
         }
     }
-    if (player->isAlive() && score < 100) slowPrint("遊戲結束！最終分數：" + std::to_string(score));
+    if (player->isAlive() && score < 100) {
+        auto endTime = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+        slowPrint("遊戲結束！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
+    }
 }
 
 void Game::battle() {

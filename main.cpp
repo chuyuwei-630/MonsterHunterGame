@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameWithMap.h"
+#include "Equipment.h"
 #include <iostream>
 #include <windows.h>
 
@@ -18,4 +19,6 @@ int main() {
     } else {
         std::cout << "無效選擇！" << std::endl;
     }
+
     return 0;
+}  // ← 這個是你缺少的右大括號

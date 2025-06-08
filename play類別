@@ -1,0 +1,51 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <map>
+
+using namespace std;
+
+class Player {
+public:
+    string name;
+    int level = 1;
+    int exp = 0;
+    int maxExp = 100;
+    int maxHp = 100;
+    int hp = 100;
+    int attack = 10;
+    int skillPoints = 0;
+
+    Player(string n) : name(n) {}
+
+    void gainExp(int amount) {
+        exp += amount;
+        cout << "你獲得了 " << amount << " 點經驗值！" << endl;
+        while (exp >= maxExp) {
+            levelUp();
+        }
+    }
+
+    void levelUp() {
+        exp -= maxExp;
+        level++;
+        maxExp += 50;
+        maxHp += 20;
+        hp = maxHp;
+        attack += 2;
+        skillPoints++;
+        cout << "🎉 升級了！現在是 Lv." << level << endl;
+        cout << "💖 最大 HP 增加為 " << maxHp << "，血量補滿！攻擊力 +" << 2 << endl;
+        cout << "⭐ 技能點 +" << 1 << endl;
+    }
+
+    void printStatus() {
+        cout << "🔹 [" << name << "] Lv." << level
+             << " | HP: " << hp << "/" << maxHp
+             << " | EXP: " << exp << "/" << maxExp
+             << " | ATK: " << attack
+             << " | SP: " << skillPoints << endl;
+    }
+};
