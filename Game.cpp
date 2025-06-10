@@ -35,10 +35,10 @@ public:
             type = 4; // 裝備寶箱
             std::uniform_int_distribution<> rarity_chance(1, 100);
             int chance = rarity_chance(gen);
-            if (chance <= 60) rarity = Equipment::LEGENDARY;
+            if (chance <= 60) rarity = Equipment::COMMON;
             else if (chance <= 85) rarity = Equipment::RARE;
             else if (chance <= 95) rarity = Equipment::EPIC;
-            else rarity = Equipment::COMMON;
+            else rarity = Equipment::LEGENDARY;
         }
     }
 
