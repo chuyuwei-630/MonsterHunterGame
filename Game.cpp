@@ -35,10 +35,10 @@ public:
             type = 4; // 裝備寶箱
             std::uniform_int_distribution<> rarity_chance(1, 100);
             int chance = rarity_chance(gen);
-            if (chance <= 60) rarity = Equipment::COMMON;
+            if (chance <= 60) rarity = Equipment::LEGENDARY;
             else if (chance <= 85) rarity = Equipment::RARE;
             else if (chance <= 95) rarity = Equipment::EPIC;
-            else rarity = Equipment::LEGENDARY;
+            else rarity = Equipment::COMMON;
         }
     }
 
@@ -58,15 +58,15 @@ public:
             std::uniform_int_distribution<> equip_type_dist(1, 5);
             int equipType = equip_type_dist(gen);
             float rarityMultiplier = (rarity == Equipment::COMMON) ? 1.0f :
-                                     (rarity == Equipment::RARE) ? 1.5f :
-                                     (rarity == Equipment::EPIC) ? 2.0f : 2.5f;
+                                     (rarity == Equipment::RARE) ? 1.2f :
+                                     (rarity == Equipment::EPIC) ? 1.5f : 1.8f;
 
             if (equipType == 1) { // 武器
                 std::vector<std::tuple<std::string, int, int, int, Element>> weapons = {
-                    {"鐵劍", 10, 0, 0, Element::NONE},
-                    {"法杖", 8, 2, 0, Element::FIRE},
-                    {"弓", 12, 0, -2, Element::AIR},
-                    {"巨斧", 15, 2, -5, Element::AIR}
+                    {"鐵劍", 7, 0, 0, Element::NONE},
+                    {"法杖", 5, 2, 0, Element::FIRE},
+                    {"弓", 9, 0, -1, Element::AIR},
+                    {"巨斧", 12, 1, -3, Element::AIR}
                 };
                 std::uniform_int_distribution<> weapon_index(0, weapons.size() - 1);
                 int idx = weapon_index(gen);
@@ -78,13 +78,21 @@ public:
                 std::string rarityStr = weapon->getRarityString();
                 player->addToInventory(std::move(weapon));
                 std::string defStr = (def >= 0) ? "增加 " + std::to_string(def) : "減少 " + std::to_string(-def);
-                slowPrint("你獲得了一把[" + rarityStr + "]" + name + "，攻擊力增加 " + std::to_string(atk) + "，防禦力" + defStr + "！已加入庫存。");
+                std::string message = "你獲得了一把[" + rarityStr + "]" + name + "，攻擊力增加 " + std::to_string(atk);
+                if (hp != 0) {
+                message += "，HP";
+                message += (hp >= 0 ? "增加 " : "減少 ");
+                message += std::to_string(std::abs(hp));
+                }
+                message += "，防禦力" + defStr + "！已加入庫存。";
+                if (rarity == Equipment::LEGENDARY) message += "（傳說效果：死亡時復活一次，HP恢復至1）";
+                slowPrint(message);
             } else if (equipType == 2) { // 護甲
                 std::vector<std::tuple<std::string, int, int, int>> armors = {
-                    {"布甲", 0, 10, 2},
-                    {"皮甲", 0, 15, 3},
-                    {"銅甲", 0, 20, 4},
-                    {"鐵甲", 0, 25, 5}
+                    {"布甲", 0, 5, 2},
+                    {"皮甲", 0, 10, 3},
+                    {"銅甲", 0, 15, 4},
+                    {"鐵甲", 0, 20, 5}
                 };
                 std::uniform_int_distribution<> armor_index(0, armors.size() - 1);
                 int idx = armor_index(gen);
@@ -95,7 +103,9 @@ public:
                 auto armor = std::make_unique<Equipment>(name, Equipment::ARMOR, atk, hp, def, rarity);
                 std::string rarityStr = armor->getRarityString();
                 player->addToInventory(std::move(armor));
-                slowPrint("你獲得了一件[" + rarityStr + "]" + name + "，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。");
+                std::string message = "你獲得了一件[" + rarityStr + "]" + name + "，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。";
+                if (rarity == Equipment::LEGENDARY) message += "（傳說效果：反彈25%受到的傷害）";
+                slowPrint(message);
             } else if (equipType == 3) { // 飾品
                 std::vector<std::tuple<std::string, int, int, int>> accessories = {
                     {"力量戒指", 5, 0, 0},
@@ -116,13 +126,14 @@ public:
                 if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
                 if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
                 message += "已加入庫存。";
+                if (rarity == Equipment::LEGENDARY) message += "（傳說效果：所有屬性增加10%）";
                 slowPrint(message);
             } else if (equipType == 4) { // 盾牌
                 std::vector<std::tuple<std::string, int, int, int>> shields = {
                     {"木盾", 0, 5, 5},
-                    {"硬木盾", 0, 10, 10},
-                    {"鐵盾", 0, 15, 15},
-                    {"法術盾", 5, 5, 5}
+                    {"硬木盾", 0, 7, 7},
+                    {"鐵盾", 0, 10, 10},
+                    {"法術盾", 4, 4, 4}
                 };
                 std::uniform_int_distribution<> shield_index(0, shields.size() - 1);
                 int idx = shield_index(gen);
@@ -138,13 +149,14 @@ public:
                 if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
                 if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
                 message += "已加入庫存。";
+                if (rarity == Equipment::LEGENDARY) message += "（傳說效果：25%閃避機率）";
                 slowPrint(message);
             } else if (equipType == 5) { // 手套
                 std::vector<std::tuple<std::string, int, int, int>> gloves = {
-                    {"拳擊手套", 10, 0, 0},
-                    {"魔力手套", 8, 5, 0},
-                    {"敏捷手套", 8, 0, 3},
-                    {"全能手套", 5, 5, 2}
+                    {"拳擊手套", 7, 0, 0},
+                    {"魔力手套", 5, 3, 0},
+                    {"敏捷手套", 5, 0, 3},
+                    {"全能手套", 3, 3, 3}
                 };
                 std::uniform_int_distribution<> glove_index(0, gloves.size() - 1);
                 int idx = glove_index(gen);
@@ -160,6 +172,7 @@ public:
                 if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
                 if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
                 message += "已加入庫存。";
+                if (rarity == Equipment::LEGENDARY) message += "（傳說效果：額外增加5攻擊力）";
                 slowPrint(message);
             }
         }
@@ -223,7 +236,6 @@ void Game::start() {
     bool gameRunning = true;
     int monstersDefeated = 0;
 
-    // 遊戲開始時進入地圖模式
     slowPrint("當前血量：" + std::to_string(player->getHP()));
     GameWithMap gameWithMap(*player);
     gameWithMap.start();
@@ -358,7 +370,7 @@ void Game::battle() {
         }
 
         slowPrint(monster->getName() + " 攻擊你！");
-        player->takeDamage(monster->getAttack());
+        player->takeDamage(monster->getAttack(), monster.get());
         slowPrint("你剩下 HP：" + std::to_string(player->getHP()));
 
         if (!player->isAlive()) break;

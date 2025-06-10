@@ -19,6 +19,9 @@ public:
     Rarity getRarity() const;
     Element getElement() const;
     std::string getRarityString() const;
+    bool isBroken() const;
+    void breakItem();
+    bool hasLegendaryEffect() const;
 
 private:
     std::string name;
@@ -28,6 +31,7 @@ private:
     int defenseBonus;
     Rarity rarity;
     Element element;
+    bool broken;
 };
 
 #endif // EQUIPMENT_H

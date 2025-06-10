@@ -1,8 +1,9 @@
 #include "Character.h"
 #include <iostream>
+#include <random>
 
 Character::Character(const std::string& name, int hp, int attack, int defense)
-    : name(name), hp(hp), attack(attack), defense(defense) {}
+    : name(name), hp(hp), attack(attack), defense(defense), hasRevived(false) {}
 
 void Character::equip(std::unique_ptr<Equipment> item) {
     Equipment::Type type = item->getType();
@@ -13,6 +14,14 @@ void Character::equip(std::unique_ptr<Equipment> item) {
     attack += equippedItems[type]->getAttackBonus();
     hp += equippedItems[type]->getHpBonus();
     defense += equippedItems[type]->getDefenseBonus();
+    if (equippedItems[type]->hasLegendaryEffect() && type == Equipment::ACCESSORY) {
+        attack += 10;
+        hp += 10;
+        defense += 10;
+    }
+    if (equippedItems[type]->hasLegendaryEffect() && type == Equipment::GLOVES) {
+        attack += 5;
+    }
 }
 
 void Character::unequip(Equipment::Type type) {
@@ -20,6 +29,14 @@ void Character::unequip(Equipment::Type type) {
         attack -= equippedItems[type]->getAttackBonus();
         hp -= equippedItems[type]->getHpBonus();
         defense -= equippedItems[type]->getDefenseBonus();
+        if (equippedItems[type]->hasLegendaryEffect() && type == Equipment::ACCESSORY) {
+            attack -= 10;
+            hp -= 10;
+            defense -= 10;
+        }
+        if (equippedItems[type]->hasLegendaryEffect() && type == Equipment::GLOVES) {
+            attack -= 5;
+        }
         addToInventory(std::move(equippedItems[type]));
         equippedItems.erase(type);
     }
@@ -38,11 +55,62 @@ void Character::equipFromInventory(size_t index) {
     }
 }
 
-void Character::takeDamage(int dmg) {
+int Character::takeDamage(int dmg, Character* attacker) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dodge_dist(1, 100);
+    if (hasLegendaryShield() && dodge_dist(gen) <= 25) {
+        std::cout << "傳說盾牌發動閃避效果，你完全躲避了這次攻擊！" << std::endl;
+        return 0;
+    }
+
     int actualDamage = dmg - defense;
     if (actualDamage < 0) actualDamage = 0;
     hp -= actualDamage;
     if (hp < 0) hp = 0;
+
+    if (hasLegendaryArmor() && attacker != nullptr) {
+        int reflectDamage = static_cast<int>(actualDamage * 0.25);
+        if (reflectDamage > 0) {
+            attacker->takeDamage(reflectDamage);
+            std::cout << "傳說布甲反彈 " << reflectDamage << " 點傷害給 " << attacker->getName() << "！" << std::endl;
+        }
+    }
+
+    if (hp == 0 && hasLegendaryWeapon() && !hasRevived) {
+        revive();
+    }
+
+    checkEquipmentBreak();
+    return actualDamage;
+}
+
+bool Character::checkEquipmentBreak() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> break_dist(1, 100);
+    bool anyBroken = false;
+
+    for (auto it = equippedItems.begin(); it != equippedItems.end();) {
+        Equipment* item = it->second.get();
+        int breakChance = 0;
+        switch (item->getRarity()) {
+            case Equipment::COMMON: breakChance = 25; break;
+            case Equipment::RARE: breakChance = 20; break;
+            case Equipment::EPIC: breakChance = 15; break;
+            case Equipment::LEGENDARY: breakChance = 10; break;
+        }
+        if (!item->isBroken() && break_dist(gen) <= breakChance) {
+            item->breakItem();
+            std::cout << "[" << item->getRarityString() << "]" << item->getName() << " 已損壞，失去效果！" << std::endl;
+            unequip(it->first);
+            it = equippedItems.begin(); // Reset iterator after unequip
+            anyBroken = true;
+        } else {
+            ++it;
+        }
+    }
+    return anyBroken;
 }
 
 bool Character::isAlive() const { return hp > 0; }
@@ -66,6 +134,37 @@ void Character::displayInventory() const {
     }
 }
 
+bool Character::hasLegendaryWeapon() const {
+    auto it = equippedItems.find(Equipment::WEAPON);
+    return it != equippedItems.end() && it->second->hasLegendaryEffect();
+}
+
+bool Character::hasLegendaryArmor() const {
+    auto it = equippedItems.find(Equipment::ARMOR);
+    return it != equippedItems.end() && it->second->hasLegendaryEffect();
+}
+
+bool Character::hasLegendaryShield() const {
+    auto it = equippedItems.find(Equipment::SHIELD);
+    return it != equippedItems.end() && it->second->hasLegendaryEffect();
+}
+
+bool Character::hasLegendaryRing() const {
+    auto it = equippedItems.find(Equipment::ACCESSORY);
+    return it != equippedItems.end() && it->second->hasLegendaryEffect();
+}
+
+bool Character::hasLegendaryGloves() const {
+    auto it = equippedItems.find(Equipment::GLOVES);
+    return it != equippedItems.end() && it->second->hasLegendaryEffect();
+}
+
+void Character::revive() {
+    hp = 1;
+    hasRevived = true;
+    std::cout << "傳說武器發動復活效果，你的生命值恢復至 1！" << std::endl;
+}
+
 Player::Player(const std::string& name, int hp, int attack, int defense)
     : Character(name, hp, attack, defense) {}
 
@@ -81,4 +180,3 @@ Element Player::getEquippedWeaponElement() const {
     }
     return Element::NONE;
 }
-
