@@ -5,7 +5,7 @@
 
 class Equipment {
 public:
-    enum Type { WEAPON, ARMOR, ACCESSORY }; // 新增飾品類型
+    enum Type { WEAPON, ARMOR, ACCESSORY, SHIELD }; // Added SHIELD type
 
     Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus = 0);
 
@@ -20,7 +20,7 @@ private:
     Type type;
     int attackBonus;
     int hpBonus;
-    int defenseBonus; // 新增防禦力加成
+    int defenseBonus;
 };
 
 #endif // EQUIPMENT_H
