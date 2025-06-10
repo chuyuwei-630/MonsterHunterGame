@@ -5,22 +5,24 @@
 
 class Equipment {
 public:
-    enum Type { WEAPON, ARMOR, ACCESSORY }; // 新增飾品類型
+    enum Type { WEAPON, ARMOR, ACCESSORY };
 
-    Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus = 0);
+    Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus, int hpRegen);
 
     std::string getName() const;
     Type getType() const;
     int getAttackBonus() const;
     int getHpBonus() const;
     int getDefenseBonus() const;
+    int getHpRegen() const;
 
 private:
     std::string name;
     Type type;
     int attackBonus;
     int hpBonus;
-    int defenseBonus; // 新增防禦力加成
+    int defenseBonus;
+    int hpRegen;
 };
 
 #endif // EQUIPMENT_H
