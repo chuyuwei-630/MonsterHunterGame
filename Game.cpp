@@ -80,9 +80,9 @@ public:
                 std::string defStr = (def >= 0) ? "增加 " + std::to_string(def) : "減少 " + std::to_string(-def);
                 std::string message = "你獲得了一把[" + rarityStr + "]" + name + "，攻擊力增加 " + std::to_string(atk);
                 if (hp != 0) {
-                message += "，HP";
-                message += (hp >= 0 ? "增加 " : "減少 ");
-                message += std::to_string(std::abs(hp));
+                    message += "，HP";
+                    message += (hp >= 0 ? "增加 " : "減少 ");
+                    message += std::to_string(std::abs(hp));
                 }
                 message += "，防禦力" + defStr + "！已加入庫存。";
                 if (rarity == Equipment::LEGENDARY) message += "（傳說效果：死亡時復活一次，HP恢復至1）";
@@ -160,11 +160,11 @@ public:
                 };
                 std::uniform_int_distribution<> glove_index(0, gloves.size() - 1);
                 int idx = glove_index(gen);
-                auto [name, baseAtk, baseHp, baseDef] = gloves[idx];
+                auto [name, baseAtk, baseHp, baseDef] = gloves[idx]; // Corrected: 4 elements
                 int atk = static_cast<int>(baseAtk * rarityMultiplier);
                 int hp = static_cast<int>(baseHp * rarityMultiplier);
                 int def = static_cast<int>(baseDef * rarityMultiplier);
-                auto glove = std::make_unique<Equipment>(name, Equipment::GLOVES, atk, hp, def, rarity);
+                auto glove = std::make_unique<Equipment>(name, Equipment::GLOVES, atk, hp, def, rarity); // Use 'name' from tuple
                 std::string rarityStr = glove->getRarityString();
                 player->addToInventory(std::move(glove));
                 std::string message = "你獲得了一雙[" + rarityStr + "]" + name + "！";
@@ -236,10 +236,6 @@ void Game::start() {
     bool gameRunning = true;
     int monstersDefeated = 0;
 
-    slowPrint("當前血量：" + std::to_string(player->getHP()));
-    GameWithMap gameWithMap(*player);
-    gameWithMap.start();
-
     while (gameRunning && player->isAlive()) {
         if (monstersDefeated >= 10) {
             auto endTime = std::chrono::steady_clock::now();
@@ -275,12 +271,28 @@ void Game::start() {
                 }
                 if (!monster->isAlive()) {
                     monstersDefeated++;
+                    // Enter map mode after defeating a monster
+                    slowPrint("進入地圖模式，收集2顆鑽石以繼續戰鬥！");
+                    GameWithMap gameWithMap(*player);
+                    gameWithMap.start(true); // Pass true to indicate from battle
+                    if (!player->isAlive()) {
+                        auto endTime = std::chrono::steady_clock::now();
+                        auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+                        slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
+                        gameRunning = false;
+                    }
                 }
                 break;
             case 2: {
                 slowPrint("當前血量：" + std::to_string(player->getHP()));
                 GameWithMap gameWithMap(*player);
-                gameWithMap.start();
+                gameWithMap.start(false); // Normal map mode
+                if (!player->isAlive()) {
+                    auto endTime = std::chrono::steady_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+                    slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
+                    gameRunning = false;
+                }
                 break;
             }
             case 3: {
@@ -382,7 +394,7 @@ void Game::battle() {
             slowPrint("你選擇撤退，返回安全區域。");
             slowPrint("當前血量：" + std::to_string(player->getHP()));
             GameWithMap gameWithMap(*player);
-            gameWithMap.start();
+            gameWithMap.start(false);
             break;
         }
     }

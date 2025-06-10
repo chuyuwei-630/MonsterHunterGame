@@ -11,7 +11,7 @@ public:
     Map(int width, int height);
     void display() const;
     bool isWalkable(int x, int y) const;
-    void setPlayerPosition(int x, int y, Player& player);
+    void setPlayerPosition(int x, int y, Player& player, int& diamondsCollected, bool& stageComplete);
     int getPlayerX() const;
     int getPlayerY() const;
 
@@ -26,12 +26,13 @@ private:
 class GameWithMap {
 public:
     GameWithMap(Player& player);
-    void start();
+    void start(bool fromBattle = false); // Modified to track if called from battle
+    bool hasCollectedTwoDiamonds() const; // Check if stage is complete
 
 private:
     Map map;
     Player& player;
+    int diamondsCollected; // Track diamonds collected in this stage
 };
 
 #endif
-
