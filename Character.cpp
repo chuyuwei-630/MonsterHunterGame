@@ -20,7 +20,7 @@ void Character::unequip(Equipment::Type type) {
         attack -= equippedItems[type]->getAttackBonus();
         hp -= equippedItems[type]->getHpBonus();
         defense -= equippedItems[type]->getDefenseBonus();
-        addToInventory(std::move(equippedItems[type])); // 卸下的裝備放入庫存
+        addToInventory(std::move(equippedItems[type]));
         equippedItems.erase(type);
     }
 }
@@ -39,7 +39,7 @@ void Character::equipFromInventory(size_t index) {
 }
 
 void Character::takeDamage(int dmg) {
-    int actualDamage = dmg - defense; // 考慮防禦力減傷
+    int actualDamage = dmg - defense;
     if (actualDamage < 0) actualDamage = 0;
     hp -= actualDamage;
     if (hp < 0) hp = 0;
@@ -75,8 +75,8 @@ void Character::displayInventory() const {
         std::cout << "（空）" << std::endl;
     } else {
         for (size_t i = 0; i < inventory.size(); ++i) {
-            std::cout << i << ": " << inventory[i]->getName() 
-                      << " (攻擊+" << inventory[i]->getAttackBonus() 
+            std::cout << i << ": [" << inventory[i]->getRarityString() << "] " << inventory[i]->getName() 
+                      << " (攻擊力+" << inventory[i]->getAttackBonus() 
                       << ", HP+" << inventory[i]->getHpBonus() 
                       << ", 防禦+" << inventory[i]->getDefenseBonus() << ")" << std::endl;
         }
