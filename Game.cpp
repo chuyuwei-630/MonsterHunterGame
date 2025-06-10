@@ -37,36 +37,40 @@ public:
         else if (type == 3) value = 10; // 積分
         else value = 4; // 裝備
     }
-    void apply(Player* player, int& score) {
-        if (type == 1) {
-            player->heal(value);
-            slowPrint("你獲得回血寶箱，回復 " + std::to_string(value) + " HP！");
-        } else if (type == 2) {
-            player->increaseAttack(value);
-            slowPrint("你獲得了攻擊力寶箱，攻擊力增加 " + std::to_string(value) + "！");
-        } else if (type == 3) {
-            score += value;
-            slowPrint("你獲得了積分寶箱，增加 " + std::to_string(value) + " 積分！");
-        } else if (type == 4) {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_int_distribution<> equip_dist(1, 3);
-            int equipType = equip_dist(gen);
-            if (equipType == 1) {
-                auto weapon = std::make_unique<Equipment>("鐵劍", Equipment::WEAPON, 10, 0, 0);
-                player->equip(std::move(weapon));
-                slowPrint("你獲得了一把鐵劍，攻擊力增加 10！");
-            } else if (equipType == 2) {
-                auto armor = std::make_unique<Equipment>("皮甲", Equipment::ARMOR, 0, 10, 5);
-                player->equip(std::move(armor));
-                slowPrint("你獲得了一件皮甲，HP增加 10，防禦力增加 5！");
-            } else {
-                auto accessory = std::make_unique<Equipment>("力量戒指", Equipment::ACCESSORY, 5, 5, 0);
-                player->equip(std::move(accessory));
-                slowPrint("你獲得了一枚力量戒指，攻擊力增加 5，HP增加 5！");
-            }
+  void Treasure::apply(Player* player, int& score) {
+    if (type == 1) {
+        player->heal(value);
+        slowPrint("你獲得回血寶箱，回復 " + std::to_string(value) + " HP！");
+    } else if (type == 2) {
+        player->increaseAttack(value);
+        slowPrint("你獲得了攻擊力寶箱，攻擊力增加 " + std::to_string(value) + "！");
+    } else if (type == 3) {
+        score += value;
+        slowPrint("你獲得了積分寶箱，增加 " + std::to_string(value) + " 積分！");
+    } else if (type == 4) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> equip_dist(1, 4);
+        int equipType = equip_dist(gen);
+        if (equipType == 1) {
+            auto sword = std::make_unique<Equipment>("長劍", Equipment::WEAPON, 10, 10, 10, 10);
+            player->equip(std::move(sword));
+            slowPrint("你獲得了一把長劍，攻擊力+10，HP+10，防禦+10，回血+10！");
+        } else if (equipType == 2) {
+            auto bow = std::make_unique<Equipment>("弓箭", Equipment::WEAPON, 15, 5, 5, 5);
+            player->equip(std::move(bow));
+            slowPrint("你獲得了一把弓箭，攻擊力+15，HP+5，防禦+5，回血+5！");
+        } else if (equipType == 3) {
+            auto staff = std::make_unique<Equipment>("法杖", Equipment::WEAPON, 12, 8, 8, 5);
+            player->equip(std::move(staff));
+            slowPrint("你獲得了一把法杖，攻擊力+12，HP+8，防禦+8，回血+5！");
+        } else {
+            auto shield = std::make_unique<Equipment>("盾牌", Equipment::ARMOR, 3, 15, 15, 10);
+            player->equip(std::move(shield));
+            slowPrint("你獲得了一面盾牌，攻擊力+3，HP+15，防禦+15，回血+10！");
         }
     }
+}
 private:
     int type;
     int value;
