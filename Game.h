@@ -14,6 +14,7 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> startTime;
     bool mapCompleted;
     bool evolutionActive;
+    int monstersDefeated; // 新增追蹤打敗的怪物數量
 
 public:
     Game();

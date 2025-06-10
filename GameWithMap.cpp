@@ -49,7 +49,7 @@ bool Map::isWalkable(int x, int y) const {
 
 void Map::setPlayerPosition(int x, int y, Player& player, int& stonesCollected, bool& stageComplete, StoneType& collectedStone) {
     if (isWalkable(x, y)) {
-        grid[playerY][playerX] = '.';
+        grid[playerY][playerX] = '.';  // 清除當前位置
         playerX = x;
         playerY = y;
 
@@ -57,13 +57,15 @@ void Map::setPlayerPosition(int x, int y, Player& player, int& stonesCollected, 
         if (cell == 'D') {
             askQuestion(player);
             stonesCollected++;
-            grid[playerY][playerX] = '.';
+            grid[playerY][playerX] = 'F';  // 收集後改為'F'
             std::cout << "目前收集：" << stonesCollected << "/2" << std::endl;
             if (stonesCollected >= 2) {
                 stageComplete = true;
                 std::cout << "你已收集2顆鑽石，準備返回戰鬥！" << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
+        } else if (cell == 'F') {
+            std::cout << "這個位置的寶石已被收集！" << std::endl;
         }
         grid[playerY][playerX] = 'P';
     } else {
@@ -142,7 +144,7 @@ void GameWithMap::start(bool fromBattle) {
                 else if (direction == 'd') newX++;
                 Map::StoneType dummyStone;
                 map.setPlayerPosition(newX, newY, player, stonesCollected, stageComplete, dummyStone);
-                totalStonesCollected++;
+                if (stonesCollected > 0) totalStonesCollected++; // 僅在收集寶石時增加總數
                 if (player.getHP() <= 0) {
                     std::cout << "你已死亡，遊戲結束！" << std::endl;
                     stageComplete = true;

@@ -190,6 +190,7 @@ Game::Game() {
     startTime = std::chrono::steady_clock::now();
     mapCompleted = true;
     evolutionActive = false;
+    monstersDefeated = 0; // 初始化打敗怪物數量
     generateMonster();
 }
 
@@ -280,14 +281,13 @@ int showOptions(bool mapCompleted, int totalStonesCollected) {
 void Game::start() {
     slowPrint("== 遊戲開始 ==");
     bool gameRunning = true;
-    int monstersDefeated = 0;
     int totalStonesCollected = 0;
 
     while (gameRunning && player->isAlive()) {
         if (monstersDefeated >= 10) {
             auto endTime = std::chrono::steady_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-            slowPrint("恭喜你！打敗了10隻怪物，遊戲勝利！遊戲時間：" + std::to_string(duration) + " 秒");
+            slowPrint("恭喜你！打敗了10隻怪物，遊戲勝利！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
             break;
         }
 
@@ -327,7 +327,7 @@ void Game::start() {
                     slowPrint("當前血量：" + std::to_string(player->getHP()));
                     GameWithMap gameWithMap(*player);
                     gameWithMap.start(false);
-                    totalStonesCollected += gameWithMap.getTotalStonesCollected();
+                    totalStonesCollected = gameWithMap.getTotalStonesCollected();
                     if (!player->isAlive()) {
                         auto endTime = std::chrono::steady_clock::now();
                         auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
@@ -378,7 +378,6 @@ void Game::battle() {
     };
     std::string celebrates[3] = {"杭特：勝利是我的！", "杭特：下一個是誰？", "杭特：太弱了！"};
     bool repairUsed = false;
-    static int totalStonesCollected = 0;
 
     while (player->isAlive() && monster->isAlive()) {
         std::cout << "選擇招式：" << std::endl;
@@ -392,7 +391,7 @@ void Game::battle() {
         int choice;
         std::cin >> choice;
 
-        if (!repairUsed && player->hasRepairStone&& choice == static_cast<int>(moves.size()) + 1) {
+        if (!repairUsed && player->hasRepairStone && choice == static_cast<int>(moves.size()) + 1) {
             player->repairWeapon();
             repairUsed = true;
             slowPrint("你使用了修復石，武器已修復！");
@@ -435,24 +434,10 @@ void Game::battle() {
             score += monsterScore;
             slowPrint(celebrates[std::uniform_int_distribution<>(0, 2)(gen)]);
             slowPrint("\n你打敗了 " + monster->getName() + "！獲得 " + std::to_string(monsterScore) + " 分！");
+            monstersDefeated++; // 增加打敗的怪物數量
             Treasure treasure;
             treasure.apply(dynamic_cast<Player*>(player.get()), score);
             resetEvolutionBoost();
-            if (totalStonesCollected < 25) {
-                slowPrint("進入地圖模式，收集2顆鑽石以繼續戰鬥！");
-                GameWithMap gameWithMap(*player);
-                gameWithMap.start(true);
-                totalStonesCollected += gameWithMap.getTotalStonesCollected();
-                if (!player->isAlive()) {
-                    auto endTime = std::chrono::steady_clock::now();
-                    auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-                    slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
-                    return;
-                }
-                mapCompleted = true;
-            } else {
-                slowPrint("你已收集25顆寶石，無法再次進入地圖！");
-            }
             break;
         }
 
@@ -467,17 +452,6 @@ void Game::battle() {
         std::cin >> action;
         if (action == "retreat") {
             slowPrint("你選擇撤退，返回安全區域。");
-            slowPrint("當前血量：" + std::to_string(player->getHP()));
-            if (totalStonesCollected < 25 && mapCompleted) {
-                GameWithMap gameWithMap(*player);
-                gameWithMap.start(false);
-                totalStonesCollected += gameWithMap.getTotalStonesCollected();
-                mapCompleted = gameWithMap.hasCollectedTwoStones();
-            } else if (totalStonesCollected >= 25) {
-                slowPrint("你已收集25顆寶石，無法再次進入地圖！");
-            } else {
-                slowPrint("你已完成本輪地圖，無法再次進入！");
-            }
             break;
         }
     }
