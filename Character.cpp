@@ -7,7 +7,7 @@ Character::Character(const std::string& name, int hp, int attack, int defense)
 void Character::equip(std::unique_ptr<Equipment> item) {
     Equipment::Type type = item->getType();
     if (equippedItems.find(type) != equippedItems.end()) {
-        unequip(type); // 如果該槽位已有裝備，先卸下
+        unequip(type);
     }
     equippedItems[type] = std::move(item);
     attack += equippedItems[type]->getAttackBonus();
@@ -45,29 +45,12 @@ void Character::takeDamage(int dmg) {
     if (hp < 0) hp = 0;
 }
 
-bool Character::isAlive() const {
-    return hp > 0;
-}
-
-int Character::getAttack() const {
-    return attack;
-}
-
-int Character::getHP() const {
-    return hp;
-}
-
-int Character::getDefense() const {
-    return defense;
-}
-
-std::string Character::getName() const {
-    return name;
-}
-
-void Character::increaseAttack(int amount) {
-    attack += amount;
-}
+bool Character::isAlive() const { return hp > 0; }
+int Character::getAttack() const { return attack; }
+int Character::getHP() const { return hp; }
+int Character::getDefense() const { return defense; }
+std::string Character::getName() const { return name; }
+void Character::increaseAttack(int amount) { attack += amount; }
 
 void Character::displayInventory() const {
     std::cout << "庫存中的裝備：" << std::endl;
@@ -75,10 +58,27 @@ void Character::displayInventory() const {
         std::cout << "（空）" << std::endl;
     } else {
         for (size_t i = 0; i < inventory.size(); ++i) {
-            std::cout << i << ": [" << inventory[i]->getRarityString() << "] " << inventory[i]->getName() 
-                      << " (攻擊力+" << inventory[i]->getAttackBonus() 
-                      << ", HP+" << inventory[i]->getHpBonus() 
+            std::cout << i << ": [" << inventory[i]->getRarityString() << "] " << inventory[i]->getName()
+                      << " (攻擊力+" << inventory[i]->getAttackBonus()
+                      << ", HP+" << inventory[i]->getHpBonus()
                       << ", 防禦+" << inventory[i]->getDefenseBonus() << ")" << std::endl;
         }
     }
 }
+
+Player::Player(const std::string& name, int hp, int attack, int defense)
+    : Character(name, hp, attack, defense) {}
+
+void Player::heal(int amount) {
+    hp += amount;
+    if (hp > 100) hp = 100;
+}
+
+Element Player::getEquippedWeaponElement() const {
+    auto it = equippedItems.find(Equipment::WEAPON);
+    if (it != equippedItems.end()) {
+        return it->second->getElement();
+    }
+    return Element::NONE;
+}
+

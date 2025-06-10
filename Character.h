@@ -12,9 +12,9 @@ protected:
     std::string name;
     int hp;
     int attack;
-    int defense; // 新增防禦力屬性
-    std::map<Equipment::Type, std::unique_ptr<Equipment>> equippedItems; // 多個裝備槽
-    std::vector<std::unique_ptr<Equipment>> inventory; // 裝備庫存
+    int defense;
+    std::map<Equipment::Type, std::unique_ptr<Equipment>> equippedItems;
+    std::vector<std::unique_ptr<Equipment>> inventory;
 
 public:
     Character(const std::string& name, int hp, int attack, int defense = 0);
@@ -28,10 +28,17 @@ public:
     bool isAlive() const;
     int getAttack() const;
     int getHP() const;
-    int getDefense() const; // 新增獲取防禦力的方法
+    int getDefense() const;
     std::string getName() const;
     void increaseAttack(int amount);
-    void displayInventory() const; // 查看庫存
+    void displayInventory() const;
 };
 
-#endif //CHARACTER_H
+class Player : public Character {
+public:
+    Player(const std::string& name, int hp, int attack, int defense);
+    void heal(int amount);
+    Element getEquippedWeaponElement() const;
+};
+
+#endif // CHARACTER_H

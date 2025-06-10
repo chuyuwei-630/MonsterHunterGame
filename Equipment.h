@@ -3,19 +3,21 @@
 
 #include <string>
 
+enum class Element { NONE, FIRE, WATER, EARTH, AIR };
+
 class Equipment {
 public:
-    enum Type { WEAPON, ARMOR, ACCESSORY, SHIELD, GLOVES }; // Added GLOVES type
-    enum Rarity { COMMON, RARE, EPIC, LEGENDARY }; // Added rarity tiers
+    enum Type { WEAPON, ARMOR, ACCESSORY, SHIELD, GLOVES };
+    enum Rarity { COMMON, RARE, EPIC, LEGENDARY };
 
-    Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus, Rarity rarity);
-
+    Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus, Rarity rarity, Element element = Element::NONE);
     std::string getName() const;
     Type getType() const;
     int getAttackBonus() const;
     int getHpBonus() const;
     int getDefenseBonus() const;
     Rarity getRarity() const;
+    Element getElement() const;
     std::string getRarityString() const;
 
 private:
@@ -25,6 +27,7 @@ private:
     int hpBonus;
     int defenseBonus;
     Rarity rarity;
+    Element element;
 };
 
 #endif // EQUIPMENT_H

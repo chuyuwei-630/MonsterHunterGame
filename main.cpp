@@ -14,11 +14,12 @@ int main() {
         Game game;
         game.start();
     } else if (choice == 2) {
-        GameWithMap game;
+        Player player("PlayerName", 100, 25, 0);
+        GameWithMap game(player);
         game.start();
     } else {
         std::cout << "無效選擇！" << std::endl;
     }
 
     return 0;
-}  // ← 這個是你缺少的右大括號
+}

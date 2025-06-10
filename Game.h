@@ -8,10 +8,10 @@
 
 class Game {
 private:
-    std::unique_ptr<Character> player;
+    std::unique_ptr<Player> player;
     std::unique_ptr<Character> monster;
     int score;
-    std::chrono::time_point<std::chrono::steady_clock> startTime; // 計時開始時間
+    std::chrono::time_point<std::chrono::steady_clock> startTime;
 
 public:
     Game();

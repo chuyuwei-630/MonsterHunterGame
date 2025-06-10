@@ -3,13 +3,15 @@
 
 #include <vector>
 #include <string>
+#include "Character.h"
 
 class Map {
 public:
+    Map();  // 預設建構子
     Map(int width, int height);
     void display() const;
     bool isWalkable(int x, int y) const;
-    void setPlayerPosition(int x, int y);
+    void setPlayerPosition(int x, int y, Player& player);
     int getPlayerX() const;
     int getPlayerY() const;
 
@@ -23,10 +25,13 @@ private:
 
 class GameWithMap {
 public:
-    GameWithMap();
+    GameWithMap(Player& player);
     void start();
 
 private:
     Map map;
+    Player& player;
 };
+
 #endif
+
