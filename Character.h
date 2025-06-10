@@ -2,10 +2,10 @@
 #define CHARACTER_H
 
 #include <string>
-#include "Equipment.h"
-#include <memory>
 #include <map>
 #include <vector>
+#include <memory>
+#include "Equipment.h"
 
 class Character {
 protected:
@@ -15,9 +15,13 @@ protected:
     int defense;
     std::map<Equipment::Type, std::unique_ptr<Equipment>> equippedItems;
     std::vector<std::unique_ptr<Equipment>> inventory;
-    bool hasRevived; // Track if legendary weapon revival has been used
-
+    bool hasRevived;
+    int baseHp;
+    int baseAttack;
+    int baseDefense;
 public:
+    bool hasRepairStone; // 改為 public
+
     Character(const std::string& name, int hp, int attack, int defense = 0);
     virtual ~Character() = default;
 
@@ -28,8 +32,8 @@ public:
     int takeDamage(int dmg, Character* attacker = nullptr);
     bool isAlive() const;
     int getAttack() const;
-    int getHP() const;
     int getDefense() const;
+    int getHP() const;
     std::string getName() const;
     void increaseAttack(int amount);
     void displayInventory() const;
@@ -40,6 +44,10 @@ public:
     bool hasLegendaryRing() const;
     bool hasLegendaryGloves() const;
     void revive();
+    void applyEvolutionBoost();
+    void resetEvolutionBoost();
+    void setRepairStone(bool has);
+    void repairWeapon();
 };
 
 class Player : public Character {
@@ -49,4 +57,4 @@ public:
     Element getEquippedWeaponElement() const;
 };
 
-#endif // CHARACTER_H
+#endif

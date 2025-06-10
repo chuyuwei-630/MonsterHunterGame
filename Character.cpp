@@ -3,7 +3,8 @@
 #include <random>
 
 Character::Character(const std::string& name, int hp, int attack, int defense)
-    : name(name), hp(hp), attack(attack), defense(defense), hasRevived(false) {}
+    : name(name), hp(hp), attack(attack), defense(defense), hasRevived(false),
+      baseHp(hp), baseAttack(attack), baseDefense(defense), hasRepairStone(false) {}
 
 void Character::equip(std::unique_ptr<Equipment> item) {
     Equipment::Type type = item->getType();
@@ -73,7 +74,7 @@ int Character::takeDamage(int dmg, Character* attacker) {
         int reflectDamage = static_cast<int>(actualDamage * 0.25);
         if (reflectDamage > 0) {
             attacker->takeDamage(reflectDamage);
-            std::cout << "傳說布甲反彈 " << reflectDamage << " 點傷害給 " << attacker->getName() << "！" << std::endl;
+            std::cout << "傳說護甲反彈 " << reflectDamage << " 點傷害給 " << attacker->getName() << "！" << std::endl;
         }
     }
 
@@ -104,7 +105,7 @@ bool Character::checkEquipmentBreak() {
             item->breakItem();
             std::cout << "[" << item->getRarityString() << "]" << item->getName() << " 已損壞，失去效果！" << std::endl;
             unequip(it->first);
-            it = equippedItems.begin(); // Reset iterator after unequip
+            it = equippedItems.begin();
             anyBroken = true;
         } else {
             ++it;
@@ -118,7 +119,7 @@ int Character::getAttack() const { return attack; }
 int Character::getHP() const { return hp; }
 int Character::getDefense() const { return defense; }
 std::string Character::getName() const { return name; }
-void Character::increaseAttack(int amount) { attack += amount; }
+void Character::increaseAttack(int amount) { attack += amount; baseAttack += amount; }
 
 void Character::displayInventory() const {
     std::cout << "庫存中的裝備：" << std::endl;
@@ -165,12 +166,58 @@ void Character::revive() {
     std::cout << "傳說武器發動復活效果，你的生命值恢復至 1！" << std::endl;
 }
 
+void Character::applyEvolutionBoost() {
+    hp = static_cast<int>(hp * 1.5);
+    attack = static_cast<int>(attack * 1.5);
+    defense = static_cast<int>(defense * 1.5);
+}
+
+void Character::resetEvolutionBoost() {
+    hp = baseHp;
+    attack = baseAttack;
+    defense = baseDefense;
+    for (const auto& [type, item] : equippedItems) {
+        attack += item->getAttackBonus();
+        hp += item->getHpBonus();
+        defense += item->getDefenseBonus();
+        if (item->hasLegendaryEffect() && type == Equipment::ACCESSORY) {
+            attack += 10;
+            hp += 10;
+            defense += 10;
+        }
+        if (item->hasLegendaryEffect() && type == Equipment::GLOVES) {
+            attack += 5;
+        }
+    }
+}
+
+void Character::setRepairStone(bool has) {
+    hasRepairStone = has;
+}
+
+
+
+void Character::repairWeapon() {
+    auto it = equippedItems.find(Equipment::WEAPON);
+    if (it != equippedItems.end() && it->second->isBroken()) {
+        it->second->repairItem();
+        attack += it->second->getAttackBonus();
+        hp += it->second->getHpBonus();
+        defense += it->second->getDefenseBonus();
+        hasRepairStone = false;
+        std::cout << "武器已修復！" << std::endl;
+    } else {
+        std::cout << "沒有損壞的武器可修復！" << std::endl;
+    }
+}
+
 Player::Player(const std::string& name, int hp, int attack, int defense)
     : Character(name, hp, attack, defense) {}
 
 void Player::heal(int amount) {
     hp += amount;
     if (hp > 100) hp = 100;
+    baseHp = hp;
 }
 
 Element Player::getEquippedWeaponElement() const {

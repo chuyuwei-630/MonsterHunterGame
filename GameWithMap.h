@@ -7,13 +7,16 @@
 
 class Map {
 public:
-    Map();  // 預設建構子
+    enum StoneType { EVOLUTION, REPAIR, DESTINY, HEALING, ATTACK };
+
+    Map();
     Map(int width, int height);
     void display() const;
     bool isWalkable(int x, int y) const;
-    void setPlayerPosition(int x, int y, Player& player, int& diamondsCollected, bool& stageComplete);
+    void setPlayerPosition(int x, int y, Player& player, int& stonesCollected, bool& stageComplete, StoneType& collectedStone);
     int getPlayerX() const;
     int getPlayerY() const;
+    void askQuestion(Player& player);
 
 private:
     int width;
@@ -26,13 +29,15 @@ private:
 class GameWithMap {
 public:
     GameWithMap(Player& player);
-    void start(bool fromBattle = false); // Modified to track if called from battle
-    bool hasCollectedTwoDiamonds() const; // Check if stage is complete
+    void start(bool fromBattle = false);
+    bool hasCollectedTwoStones() const;
+    int getTotalStonesCollected() const;
 
 private:
     Map map;
     Player& player;
-    int diamondsCollected; // Track diamonds collected in this stage
+    int stonesCollected;
+    int totalStonesCollected;
 };
 
 #endif

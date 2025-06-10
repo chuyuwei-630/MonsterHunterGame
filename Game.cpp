@@ -23,16 +23,16 @@ public:
         std::uniform_int_distribution<> type_dist(1, 100);
         int roll = type_dist(gen);
         if (roll <= 15) {
-            type = 1; // 回血寶箱
+            type = 1;
             value = 20;
         } else if (roll <= 30) {
-            type = 2; // 攻擊力寶箱
+            type = 2;
             value = 5;
         } else if (roll <= 45) {
-            type = 3; // 經驗寶箱
+            type = 3;
             value = 10;
         } else {
-            type = 4; // 裝備寶箱
+            type = 4;
             std::uniform_int_distribution<> rarity_chance(1, 100);
             int chance = rarity_chance(gen);
             if (chance <= 60) rarity = Equipment::COMMON;
@@ -61,7 +61,7 @@ public:
                                      (rarity == Equipment::RARE) ? 1.2f :
                                      (rarity == Equipment::EPIC) ? 1.5f : 1.8f;
 
-            if (equipType == 1) { // 武器
+            if (equipType == 1) {
                 std::vector<std::tuple<std::string, int, int, int, Element>> weapons = {
                     {"鐵劍", 7, 0, 0, Element::NONE},
                     {"法杖", 5, 2, 0, Element::FIRE},
@@ -87,7 +87,7 @@ public:
                 message += "，防禦力" + defStr + "！已加入庫存。";
                 if (rarity == Equipment::LEGENDARY) message += "（傳說效果：死亡時復活一次，HP恢復至1）";
                 slowPrint(message);
-            } else if (equipType == 2) { // 護甲
+            } else if (equipType == 2) {
                 std::vector<std::tuple<std::string, int, int, int>> armors = {
                     {"布甲", 0, 5, 2},
                     {"皮甲", 0, 10, 3},
@@ -106,7 +106,7 @@ public:
                 std::string message = "你獲得了一件[" + rarityStr + "]" + name + "，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。";
                 if (rarity == Equipment::LEGENDARY) message += "（傳說效果：反彈25%受到的傷害）";
                 slowPrint(message);
-            } else if (equipType == 3) { // 飾品
+            } else if (equipType == 3) {
                 std::vector<std::tuple<std::string, int, int, int>> accessories = {
                     {"力量戒指", 5, 0, 0},
                     {"生命戒指", 0, 10, 0},
@@ -128,7 +128,7 @@ public:
                 message += "已加入庫存。";
                 if (rarity == Equipment::LEGENDARY) message += "（傳說效果：所有屬性增加10%）";
                 slowPrint(message);
-            } else if (equipType == 4) { // 盾牌
+            } else if (equipType == 4) {
                 std::vector<std::tuple<std::string, int, int, int>> shields = {
                     {"木盾", 0, 5, 5},
                     {"硬木盾", 0, 7, 7},
@@ -151,7 +151,7 @@ public:
                 message += "已加入庫存。";
                 if (rarity == Equipment::LEGENDARY) message += "（傳說效果：25%閃避機率）";
                 slowPrint(message);
-            } else if (equipType == 5) { // 手套
+            } else if (equipType == 5) {
                 std::vector<std::tuple<std::string, int, int, int>> gloves = {
                     {"拳擊手套", 7, 0, 0},
                     {"魔力手套", 5, 3, 0},
@@ -160,11 +160,11 @@ public:
                 };
                 std::uniform_int_distribution<> glove_index(0, gloves.size() - 1);
                 int idx = glove_index(gen);
-                auto [name, baseAtk, baseHp, baseDef] = gloves[idx]; // Corrected: 4 elements
+                auto [name, baseAtk, baseHp, baseDef] = gloves[idx];
                 int atk = static_cast<int>(baseAtk * rarityMultiplier);
                 int hp = static_cast<int>(baseHp * rarityMultiplier);
                 int def = static_cast<int>(baseDef * rarityMultiplier);
-                auto glove = std::make_unique<Equipment>(name, Equipment::GLOVES, atk, hp, def, rarity); // Use 'name' from tuple
+                auto glove = std::make_unique<Equipment>(name, Equipment::GLOVES, atk, hp, def, rarity);
                 std::string rarityStr = glove->getRarityString();
                 player->addToInventory(std::move(glove));
                 std::string message = "你獲得了一雙[" + rarityStr + "]" + name + "！";
@@ -188,6 +188,8 @@ Game::Game() {
     player = std::make_unique<Player>("杭特", 100, 25, 0);
     score = 0;
     startTime = std::chrono::steady_clock::now();
+    mapCompleted = true;
+    evolutionActive = false;
     generateMonster();
 }
 
@@ -224,8 +226,52 @@ void slowPrint(const std::string& text, int delay) {
     std::cout << std::endl;
 }
 
-int showOptions() {
-    std::cout << "\n選擇行動：\n1 - 繼續戰鬥\n2 - 進入地圖模式\n3 - 查看並管理庫存\n4 - 退出遊戲\n你的選擇: ";
+void Game::applyDestinyStone() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::vector<std::tuple<std::string, std::vector<std::string>, int>> questions = {
+        {"以下哪個是杭特的初始武器？", {"鐵劍", "法杖", "弓"}, 0},
+        {"哥布林的典型弱點是什麼？", {"火", "水", "風"}, 0},
+        {"傳說武器的特殊效果是什麼？", {"復活", "反彈傷害", "閃避"}, 0}
+    };
+    std::uniform_int_distribution<> q_dist(0, questions.size() - 1);
+    int q_idx = q_dist(gen);
+    auto [question, options, correct] = questions[q_idx];
+
+    slowPrint("命運石發動！回答以下問題：");
+    slowPrint(question);
+    for (size_t i = 0; i < options.size(); ++i) {
+        std::cout << i + 1 << ": " << options[i] << std::endl;
+    }
+    std::cout << "你的答案（1-3）：";
+    int answer;
+    std::cin >> answer;
+    if (answer - 1 == correct) {
+        player->heal(30);
+        slowPrint("回答正確！回復30 HP！");
+    } else {
+        slowPrint("回答錯誤，沒有獎勵。");
+    }
+}
+
+void Game::resetEvolutionBoost() {
+    if (evolutionActive) {
+        player->resetEvolutionBoost();
+        evolutionActive = false;
+        slowPrint("進化石效果結束，屬性恢復正常。");
+    }
+}
+
+int showOptions(bool mapCompleted, int totalStonesCollected) {
+    std::cout << "\n選擇行動：\n1 - 繼續戰鬥\n";
+    if (totalStonesCollected >= 25) {
+        std::cout << "2 - 地圖模式（已收集25顆寶石，無法再次進入）\n";
+    } else if (!mapCompleted) {
+        std::cout << "2 - 進入地圖模式（已完成本輪地圖）\n";
+    } else {
+        std::cout << "2 - 進入地圖模式\n";
+    }
+    std::cout << "3 - 查看並管理庫存\n4 - 退出遊戲\n你的選擇: ";
     int choice;
     std::cin >> choice;
     return choice;
@@ -235,6 +281,7 @@ void Game::start() {
     slowPrint("== 遊戲開始 ==");
     bool gameRunning = true;
     int monstersDefeated = 0;
+    int totalStonesCollected = 0;
 
     while (gameRunning && player->isAlive()) {
         if (monstersDefeated >= 10) {
@@ -244,10 +291,11 @@ void Game::start() {
             break;
         }
 
-        int choice = showOptions();
+        int choice = showOptions(mapCompleted, totalStonesCollected);
         switch (choice) {
             case 1:
                 if (!monster || !monster->isAlive()) {
+                    resetEvolutionBoost();
                     generateMonster();
                 }
                 slowPrint("你遇到了怪物：" + monster->getName() + "！");
@@ -269,29 +317,26 @@ void Game::start() {
                     slowPrint("你被擊敗了！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
                     break;
                 }
-                if (!monster->isAlive()) {
-                    monstersDefeated++;
-                    // Enter map mode after defeating a monster
-                    slowPrint("進入地圖模式，收集2顆鑽石以繼續戰鬥！");
+                break;
+            case 2: {
+                if (totalStonesCollected >= 25) {
+                    slowPrint("你已收集25顆寶石，無法再次進入地圖！");
+                    break;
+                }
+                if (mapCompleted) {
+                    slowPrint("當前血量：" + std::to_string(player->getHP()));
                     GameWithMap gameWithMap(*player);
-                    gameWithMap.start(true); // Pass true to indicate from battle
+                    gameWithMap.start(false);
+                    totalStonesCollected += gameWithMap.getTotalStonesCollected();
                     if (!player->isAlive()) {
                         auto endTime = std::chrono::steady_clock::now();
                         auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
                         slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
                         gameRunning = false;
                     }
-                }
-                break;
-            case 2: {
-                slowPrint("當前血量：" + std::to_string(player->getHP()));
-                GameWithMap gameWithMap(*player);
-                gameWithMap.start(false); // Normal map mode
-                if (!player->isAlive()) {
-                    auto endTime = std::chrono::steady_clock::now();
-                    auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-                    slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
-                    gameRunning = false;
+                    mapCompleted = gameWithMap.hasCollectedTwoStones();
+                } else {
+                    slowPrint("你已完成本輪地圖，請繼續戰鬥！");
                 }
                 break;
             }
@@ -332,14 +377,28 @@ void Game::battle() {
         {"旋風斬", 1.2}
     };
     std::string celebrates[3] = {"杭特：勝利是我的！", "杭特：下一個是誰？", "杭特：太弱了！"};
+    bool repairUsed = false;
+    static int totalStonesCollected = 0;
 
     while (player->isAlive() && monster->isAlive()) {
         std::cout << "選擇招式：" << std::endl;
         for (size_t i = 0; i < moves.size(); ++i) {
             std::cout << i + 1 << ": " << moves[i].first << std::endl;
         }
+        if (!repairUsed && player->hasRepairStone) {
+            std::cout << moves.size() + 1 << ": 使用修復石修復武器" << std::endl;
+        }
+        std::cout << "你的選擇：";
         int choice;
         std::cin >> choice;
+
+        if (!repairUsed && player->hasRepairStone&& choice == static_cast<int>(moves.size()) + 1) {
+            player->repairWeapon();
+            repairUsed = true;
+            slowPrint("你使用了修復石，武器已修復！");
+            continue;
+        }
+
         if (choice < 1 || choice > static_cast<int>(moves.size())) {
             std::cout << "無效選擇！使用普通攻擊。" << std::endl;
             choice = 1;
@@ -378,6 +437,22 @@ void Game::battle() {
             slowPrint("\n你打敗了 " + monster->getName() + "！獲得 " + std::to_string(monsterScore) + " 分！");
             Treasure treasure;
             treasure.apply(dynamic_cast<Player*>(player.get()), score);
+            resetEvolutionBoost();
+            if (totalStonesCollected < 25) {
+                slowPrint("進入地圖模式，收集2顆鑽石以繼續戰鬥！");
+                GameWithMap gameWithMap(*player);
+                gameWithMap.start(true);
+                totalStonesCollected += gameWithMap.getTotalStonesCollected();
+                if (!player->isAlive()) {
+                    auto endTime = std::chrono::steady_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+                    slowPrint("你在地圖中死亡！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
+                    return;
+                }
+                mapCompleted = true;
+            } else {
+                slowPrint("你已收集25顆寶石，無法再次進入地圖！");
+            }
             break;
         }
 
@@ -393,8 +468,16 @@ void Game::battle() {
         if (action == "retreat") {
             slowPrint("你選擇撤退，返回安全區域。");
             slowPrint("當前血量：" + std::to_string(player->getHP()));
-            GameWithMap gameWithMap(*player);
-            gameWithMap.start(false);
+            if (totalStonesCollected < 25 && mapCompleted) {
+                GameWithMap gameWithMap(*player);
+                gameWithMap.start(false);
+                totalStonesCollected += gameWithMap.getTotalStonesCollected();
+                mapCompleted = gameWithMap.hasCollectedTwoStones();
+            } else if (totalStonesCollected >= 25) {
+                slowPrint("你已收集25顆寶石，無法再次進入地圖！");
+            } else {
+                slowPrint("你已完成本輪地圖，無法再次進入！");
+            }
             break;
         }
     }

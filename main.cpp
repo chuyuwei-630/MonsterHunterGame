@@ -6,7 +6,7 @@
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    std::cout << "選擇遊戲模式：1 - 戰鬥遊戲, 2 - 地圖遊戲: ";
+    std::cout << "選擇遊戲模式：1 - 戰鬥遊戲 ";
     int choice;
     std::cin >> choice;
 

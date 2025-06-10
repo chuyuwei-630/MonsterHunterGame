@@ -3,7 +3,7 @@
 
 #include <string>
 
-enum class Element { NONE, FIRE, WATER, EARTH, AIR };
+enum class Element { NONE, FIRE, AIR };
 
 class Equipment {
 public:
@@ -17,11 +17,12 @@ public:
     int getHpBonus() const;
     int getDefenseBonus() const;
     Rarity getRarity() const;
-    Element getElement() const;
     std::string getRarityString() const;
+    bool hasLegendaryEffect() const;
+    Element getElement() const;
     bool isBroken() const;
     void breakItem();
-    bool hasLegendaryEffect() const;
+    void repairItem();
 
 private:
     std::string name;
@@ -34,4 +35,4 @@ private:
     bool broken;
 };
 
-#endif // EQUIPMENT_H
+#endif
