@@ -1,19 +1,18 @@
 #include "Character.h"
 #include <iostream>
 
-Character::Character(const std::string& name, int hp, int attack, int defense, int hpRegen)
-    : name(name), hp(hp), attack(attack), defense(defense), hpRegen(hpRegen) {}
+Character::Character(const std::string& name, int hp, int attack, int defense)
+    : name(name), hp(hp), attack(attack), defense(defense) {}
 
 void Character::equip(std::unique_ptr<Equipment> item) {
     Equipment::Type type = item->getType();
     if (equippedItems.find(type) != equippedItems.end()) {
-        unequip(type);
+        unequip(type); // 如果該槽位已有裝備，先卸下
     }
     equippedItems[type] = std::move(item);
     attack += equippedItems[type]->getAttackBonus();
     hp += equippedItems[type]->getHpBonus();
     defense += equippedItems[type]->getDefenseBonus();
-    hpRegen += equippedItems[type]->getHpRegen();
 }
 
 void Character::unequip(Equipment::Type type) {
@@ -21,22 +20,13 @@ void Character::unequip(Equipment::Type type) {
         attack -= equippedItems[type]->getAttackBonus();
         hp -= equippedItems[type]->getHpBonus();
         defense -= equippedItems[type]->getDefenseBonus();
-        hpRegen -= equippedItems[type]->getHpRegen();
-        addToInventory(std::move(equippedItems[type]));
+        addToInventory(std::move(equippedItems[type])); // 卸下的裝備放入庫存
         equippedItems.erase(type);
     }
 }
 
 void Character::addToInventory(std::unique_ptr<Equipment> item) {
     inventory.push_back(std::move(item));
-}
-
-int Character::getHpRegen() const {
-    return hpRegen;
-}
-
-std::string Character::getName() const {
-    return name;
 }
 
 void Character::equipFromInventory(size_t index) {
