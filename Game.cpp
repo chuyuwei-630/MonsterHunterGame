@@ -149,10 +149,23 @@ void slowPrint(const std::string& text, int delay) {
     std::cout << std::endl;
 }
 
+int showOptions() {
+    std::cout << "\n選擇行動：\n1 - 繼續戰鬥\n2 - 進入地圖模式\n3 - 查看並管理庫存\n4 - 退出遊戲\n你的選擇: ";
+    int choice;
+    std::cin >> choice;
+    return choice;
+}
+
 void Game::start() {
     slowPrint("== 遊戲開始 ==");
     bool gameRunning = true;
     int monstersDefeated = 0;
+
+    // 遊戲開始時進入地圖模式
+    slowPrint("當前血量：" + std::to_string(player->getHP()));
+    GameWithMap gameWithMap(*player);
+    gameWithMap.start();
+
     while (gameRunning && player->isAlive()) {
         if (monstersDefeated >= 10) {
             auto endTime = std::chrono::steady_clock::now();
@@ -161,39 +174,34 @@ void Game::start() {
             break;
         }
 
-        if (!monster || !monster->isAlive()) {
-            generateMonster();
-        }
-
-        slowPrint("你遇到了怪物：" + monster->getName() + "！");
-        if (monster->getName() == "哥布林")
-            slowPrint("哥布林：我會吃掉你！");
-        else if (monster->getName() == "雷射")
-            slowPrint("雷射：感受我的雷射光束！");
-        else if (monster->getName() == "地精")
-            slowPrint("地精：你逃不掉的！");
-        else if (monster->getName() == "巨魔")
-            slowPrint("巨魔：我會踩扁你！");
-        slowPrint("怪物HP：" + std::to_string(monster->getHP()) +
-                  " 攻擊力：" + std::to_string(monster->getAttack()) +
-                  " 防禦力：" + std::to_string(monster->getDefense()));
-        battle();
-        if (!player->isAlive()) {
-            auto endTime = std::chrono::steady_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-            slowPrint("你被擊敗了！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
-            break;
-        }
-        if (!monster->isAlive()) {
-            monstersDefeated++;
-        }
-
-        std::cout << "\n選擇行動：\n1 - 繼續戰鬥\n2 - 進入地圖模式\n3 - 查看並管理庫存\n4 - 退出遊戲\n你的選擇: ";
-        int choice;
-        std::cin >> choice;
+        int choice = showOptions();
         switch (choice) {
             case 1:
-                generateMonster();
+                if (!monster || !monster->isAlive()) {
+                    generateMonster();
+                }
+                slowPrint("你遇到了怪物：" + monster->getName() + "！");
+                if (monster->getName() == "哥布林")
+                    slowPrint("哥布林：我會吃掉你！");
+                else if (monster->getName() == "雷射")
+                    slowPrint("雷射：感受我的雷射光束！");
+                else if (monster->getName() == "地精")
+                    slowPrint("地精：你逃不掉的！");
+                else if (monster->getName() == "巨魔")
+                    slowPrint("巨魔：我會踩扁你！");
+                slowPrint("怪物HP：" + std::to_string(monster->getHP()) +
+                          " 攻擊力：" + std::to_string(monster->getAttack()) +
+                          " 防禦力：" + std::to_string(monster->getDefense()));
+                battle();
+                if (!player->isAlive()) {
+                    auto endTime = std::chrono::steady_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+                    slowPrint("你被擊敗了！最終分數：" + std::to_string(score) + "，遊戲時間：" + std::to_string(duration) + " 秒");
+                    break;
+                }
+                if (!monster->isAlive()) {
+                    monstersDefeated++;
+                }
                 break;
             case 2: {
                 slowPrint("當前血量：" + std::to_string(player->getHP()));

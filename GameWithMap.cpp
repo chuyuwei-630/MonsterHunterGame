@@ -2,7 +2,6 @@
 #include <iostream>
 #include <random>
 
-// 預設建構子：預設建立一個 5x5 地圖
 Map::Map() : Map(5, 5) {}
 
 Map::Map(int width, int height) : width(width), height(height), playerX(0), playerY(0) {
@@ -63,7 +62,7 @@ GameWithMap::GameWithMap(Player& player) : player(player) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> size_dist(5, 10);
     int size = size_dist(gen);
-    map = Map(size, size);  // 現在 map 有預設建構子，可以這樣寫
+    map = Map(size, size);
 }
 
 void GameWithMap::start() {
