@@ -20,12 +20,19 @@ public:
     Treasure() {
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> type_dist(1, 4);
-        type = type_dist(gen);
-        if (type == 1) value = 20; // Health
-        else if (type == 2) value = 5; // Attack Boost
-        else if (type == 3) value = 10; // Score (Experience)
-        else {
+        std::uniform_int_distribution<> type_dist(1, 100);
+        int roll = type_dist(gen);
+        if (roll <= 15) {
+            type = 1; // 回血寶箱
+            value = 20;
+        } else if (roll <= 30) {
+            type = 2; // 攻擊力寶箱
+            value = 5;
+        } else if (roll <= 45) {
+            type = 3; // 經驗寶箱
+            value = 10;
+        } else {
+            type = 4; // 裝備寶箱
             std::uniform_int_distribution<> rarity_chance(1, 100);
             int chance = rarity_chance(gen);
             if (chance <= 60) rarity = Equipment::COMMON;
@@ -34,6 +41,7 @@ public:
             else rarity = Equipment::LEGENDARY;
         }
     }
+
     void apply(Player* player, int& score) {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -50,59 +58,113 @@ public:
             std::uniform_int_distribution<> equip_type_dist(1, 5);
             int equipType = equip_type_dist(gen);
             float rarityMultiplier = (rarity == Equipment::COMMON) ? 1.0f :
-                                    (rarity == Equipment::RARE) ? 1.5f :
-                                    (rarity == Equipment::EPIC) ? 2.0f : 2.5f;
+                                     (rarity == Equipment::RARE) ? 1.5f :
+                                     (rarity == Equipment::EPIC) ? 2.0f : 2.5f;
 
-            if (equipType == 1) {
-                std::uniform_int_distribution<> weapon_dist(1, 4);
-                int weaponType = weapon_dist(gen);
-                if (weaponType == 1) {
-                    int attack = static_cast<int>(10 * rarityMultiplier);
-                    auto weapon = std::make_unique<Equipment>("鐵劍", Equipment::WEAPON, attack, 0, 0, rarity, Element::NONE);
-                    player->addToInventory(std::move(weapon));
-                    slowPrint("你獲得了一把[" + weapon->getRarityString() + "]鐵劍，攻擊力增加 " + std::to_string(attack) + "！已加入庫存。");
-                } else if (weaponType == 2) {
-                    int attack = static_cast<int>(8 * rarityMultiplier);
-                    auto weapon = std::make_unique<Equipment>("火劍", Equipment::WEAPON, attack, 0, 0, rarity, Element::FIRE);
-                    player->addToInventory(std::move(weapon));
-                    slowPrint("你獲得了一把[" + weapon->getRarityString() + "]火劍，攻擊力增加 " + std::to_string(attack) + "！已加入庫存。");
-                } else if (weaponType == 3) {
-                    int attack = static_cast<int>(12 * rarityMultiplier);
-                    auto weapon = std::make_unique<Equipment>("風弓", Equipment::WEAPON, attack, 0, 0, rarity, Element::AIR);
-                    player->addToInventory(std::move(weapon));
-                    slowPrint("你獲得了一把[" + weapon->getRarityString() + "]風弓，攻擊力增加 " + std::to_string(attack) + "！已加入庫存。");
-                } else {
-                    int attack = static_cast<int>(15 * rarityMultiplier);
-                    auto weapon = std::make_unique<Equipment>("雷斧", Equipment::WEAPON, attack, 0, 0, rarity, Element::AIR);
-                    player->addToInventory(std::move(weapon));
-                    slowPrint("你獲得了一把[" + weapon->getRarityString() + "]雷斧，攻擊力增加 " + std::to_string(attack) + "！已加入庫存。");
-                }
-            } else if (equipType == 2) {
-                int hp = static_cast<int>(20 * rarityMultiplier);
-                int def = static_cast<int>(5 * rarityMultiplier);
-                auto armor = std::make_unique<Equipment>("盔甲", Equipment::ARMOR, 0, hp, def, rarity);
+            if (equipType == 1) { // 武器
+                std::vector<std::tuple<std::string, int, int, int, Element>> weapons = {
+                    {"鐵劍", 10, 0, 0, Element::NONE},
+                    {"法杖", 8, 2, 0, Element::FIRE},
+                    {"弓", 12, 0, -2, Element::AIR},
+                    {"巨斧", 15, 2, -5, Element::AIR}
+                };
+                std::uniform_int_distribution<> weapon_index(0, weapons.size() - 1);
+                int idx = weapon_index(gen);
+                auto [name, baseAtk, baseHp, baseDef, element] = weapons[idx];
+                int atk = static_cast<int>(baseAtk * rarityMultiplier);
+                int hp = static_cast<int>(baseHp * rarityMultiplier);
+                int def = static_cast<int>(baseDef * rarityMultiplier);
+                auto weapon = std::make_unique<Equipment>(name, Equipment::WEAPON, atk, hp, def, rarity, element);
+                std::string rarityStr = weapon->getRarityString();
+                player->addToInventory(std::move(weapon));
+                std::string defStr = (def >= 0) ? "增加 " + std::to_string(def) : "減少 " + std::to_string(-def);
+                slowPrint("你獲得了一把[" + rarityStr + "]" + name + "，攻擊力增加 " + std::to_string(atk) + "，防禦力" + defStr + "！已加入庫存。");
+            } else if (equipType == 2) { // 護甲
+                std::vector<std::tuple<std::string, int, int, int>> armors = {
+                    {"布甲", 0, 10, 2},
+                    {"皮甲", 0, 15, 3},
+                    {"銅甲", 0, 20, 4},
+                    {"鐵甲", 0, 25, 5}
+                };
+                std::uniform_int_distribution<> armor_index(0, armors.size() - 1);
+                int idx = armor_index(gen);
+                auto [name, baseAtk, baseHp, baseDef] = armors[idx];
+                int atk = static_cast<int>(baseAtk * rarityMultiplier);
+                int hp = static_cast<int>(baseHp * rarityMultiplier);
+                int def = static_cast<int>(baseDef * rarityMultiplier);
+                auto armor = std::make_unique<Equipment>(name, Equipment::ARMOR, atk, hp, def, rarity);
+                std::string rarityStr = armor->getRarityString();
                 player->addToInventory(std::move(armor));
-                slowPrint("你獲得了一件[" + armor->getRarityString() + "]盔甲，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。");
-            } else if (equipType == 3) {
-                int attack = static_cast<int>(5 * rarityMultiplier);
-                int hp = static_cast<int>(10 * rarityMultiplier);
-                auto accessory = std::make_unique<Equipment>("戒指", Equipment::ACCESSORY, attack, hp, 0, rarity);
+                slowPrint("你獲得了一件[" + rarityStr + "]" + name + "，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。");
+            } else if (equipType == 3) { // 飾品
+                std::vector<std::tuple<std::string, int, int, int>> accessories = {
+                    {"力量戒指", 5, 0, 0},
+                    {"生命戒指", 0, 10, 0},
+                    {"防禦戒指", 0, 0, 3}
+                };
+                std::uniform_int_distribution<> accessory_index(0, accessories.size() - 1);
+                int idx = accessory_index(gen);
+                auto [name, baseAtk, baseHp, baseDef] = accessories[idx];
+                int atk = static_cast<int>(baseAtk * rarityMultiplier);
+                int hp = static_cast<int>(baseHp * rarityMultiplier);
+                int def = static_cast<int>(baseDef * rarityMultiplier);
+                auto accessory = std::make_unique<Equipment>(name, Equipment::ACCESSORY, atk, hp, def, rarity);
+                std::string rarityStr = accessory->getRarityString();
                 player->addToInventory(std::move(accessory));
-                slowPrint("你獲得了一枚[" + accessory->getRarityString() + "]戒指，攻擊力增加 " + std::to_string(attack) + "，HP增加 " + std::to_string(hp) + "！已加入庫存。");
-            } else if (equipType == 4) {
-                int hp = static_cast<int>(5 * rarityMultiplier);
-                int def = static_cast<int>(10 * rarityMultiplier);
-                auto shield = std::make_unique<Equipment>("盾牌", Equipment::SHIELD, 0, hp, def, rarity);
+                std::string message = "你獲得了一枚[" + rarityStr + "]" + name + "！";
+                if (atk > 0) message += "攻擊力增加 " + std::to_string(atk) + "，";
+                if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
+                if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
+                message += "已加入庫存。";
+                slowPrint(message);
+            } else if (equipType == 4) { // 盾牌
+                std::vector<std::tuple<std::string, int, int, int>> shields = {
+                    {"木盾", 0, 5, 5},
+                    {"硬木盾", 0, 10, 10},
+                    {"鐵盾", 0, 15, 15},
+                    {"法術盾", 5, 5, 5}
+                };
+                std::uniform_int_distribution<> shield_index(0, shields.size() - 1);
+                int idx = shield_index(gen);
+                auto [name, baseAtk, baseHp, baseDef] = shields[idx];
+                int atk = static_cast<int>(baseAtk * rarityMultiplier);
+                int hp = static_cast<int>(baseHp * rarityMultiplier);
+                int def = static_cast<int>(baseDef * rarityMultiplier);
+                auto shield = std::make_unique<Equipment>(name, Equipment::SHIELD, atk, hp, def, rarity);
+                std::string rarityStr = shield->getRarityString();
                 player->addToInventory(std::move(shield));
-                slowPrint("你獲得了一面[" + shield->getRarityString() + "]盾牌，HP增加 " + std::to_string(hp) + "，防禦力增加 " + std::to_string(def) + "！已加入庫存。");
-            } else {
-                int attack = static_cast<int>(10 * rarityMultiplier);
-                auto gloves = std::make_unique<Equipment>("手套", Equipment::GLOVES, attack, 0, 0, rarity);
-                player->addToInventory(std::move(gloves));
-                slowPrint("你獲得了一雙[" + gloves->getRarityString() + "]手套，攻擊力增加 " + std::to_string(attack) + "！已加入庫存。");
+                std::string message = "你獲得了一面[" + rarityStr + "]" + name + "！";
+                if (atk > 0) message += "攻擊力增加 " + std::to_string(atk) + "，";
+                if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
+                if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
+                message += "已加入庫存。";
+                slowPrint(message);
+            } else if (equipType == 5) { // 手套
+                std::vector<std::tuple<std::string, int, int, int>> gloves = {
+                    {"拳擊手套", 10, 0, 0},
+                    {"魔力手套", 8, 5, 0},
+                    {"敏捷手套", 8, 0, 3},
+                    {"全能手套", 5, 5, 2}
+                };
+                std::uniform_int_distribution<> glove_index(0, gloves.size() - 1);
+                int idx = glove_index(gen);
+                auto [name, baseAtk, baseHp, baseDef] = gloves[idx];
+                int atk = static_cast<int>(baseAtk * rarityMultiplier);
+                int hp = static_cast<int>(baseHp * rarityMultiplier);
+                int def = static_cast<int>(baseDef * rarityMultiplier);
+                auto glove = std::make_unique<Equipment>(name, Equipment::GLOVES, atk, hp, def, rarity);
+                std::string rarityStr = glove->getRarityString();
+                player->addToInventory(std::move(glove));
+                std::string message = "你獲得了一雙[" + rarityStr + "]" + name + "！";
+                if (atk > 0) message += "攻擊力增加 " + std::to_string(atk) + "，";
+                if (hp > 0) message += "HP增加 " + std::to_string(hp) + "，";
+                if (def > 0) message += "防禦力增加 " + std::to_string(def) + "，";
+                message += "已加入庫存。";
+                slowPrint(message);
             }
         }
     }
+
 private:
     int type;
     int value;
