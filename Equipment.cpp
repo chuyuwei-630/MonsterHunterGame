@@ -1,7 +1,7 @@
 #include "Equipment.h"
 
-Equipment::Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus, int hpRegen)
-    : name(name), type(type), attackBonus(attackBonus), hpBonus(hpBonus), defenseBonus(defenseBonus), hpRegen(hpRegen) {}
+Equipment::Equipment(const std::string& name, Type type, int attackBonus, int hpBonus, int defenseBonus)
+    : name(name), type(type), attackBonus(attackBonus), hpBonus(hpBonus), defenseBonus(defenseBonus) {}
 
 std::string Equipment::getName() const {
     return name;
@@ -21,8 +21,4 @@ int Equipment::getHpBonus() const {
 
 int Equipment::getDefenseBonus() const {
     return defenseBonus;
-}
-
-int Equipment::getHpRegen() const {
-    return hpRegen;
 }
