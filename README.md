@@ -14,7 +14,7 @@
 玩家在10x10的網格地圖上移動，收集鑽石（標記為'D'）。每收集一顆鑽石需回答問題，答對回復15 HP，答錯扣除20 HP。收集2顆鑽石後完成當前地圖階段，最多可收集25顆鑽石。
 玩家（Player）和怪物（Monster）具有生命值（HP）、攻擊力（Attack）和防禦力（Defense）。HP降至0時角色死亡，遊戲結束（除非有傳說武器觸發復活效果）。玩家可通過裝備、寶箱或石頭效果提升屬性。
 裝備分為武器（WEAPON）、護甲（ARMOR）、飾品（ACCESSORY）、盾牌（SHIELD）和手套（GLOVES），有普通（COMMON）、稀有（RARE）、史詩（EPIC）、傳說（LEGENDARY）四種稀有度。裝備提供攻擊力、HP、防禦力加成，傳說裝備有特殊效果（如復活、反彈傷害、閃避、屬性提升）。裝備可能在戰鬥中損壞（依稀有度有10%-25%機率），損壞後失去效果。   </li>
-      <li><strong>程式介紹玩法    </strong>Game.h / Game.cpp：核心遊戲邏輯，管理戰鬥模式、怪物生成、寶箱獎勵和遊戲流程。
+      <li><strong>程式介紹玩法:    </strong>Game.h / Game.cpp：核心遊戲邏輯，管理戰鬥模式、怪物生成、寶箱獎勵和遊戲流程。
 GameWithMap.h / GameWithMap.cpp：地圖模式邏輯，處理地圖生成、玩家移動、鑽石收集和問題回答。
 Character.h / Character.cpp：定義Character基類及其子類Player和Monster，管理角色屬性、裝備、戰鬥和狀態。
 Equipment.h / Equipment.cpp：定義Equipment類，管理裝備屬性、稀有度、元素和損壞/修復邏輯。
