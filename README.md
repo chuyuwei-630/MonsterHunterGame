@@ -92,8 +92,9 @@ MinGW：
 使用Visual Studio的除錯器或在程式中加入日誌（如std::cout輸出）排查問題。
 
 運行畫面截圖
-
-
+![image](https://github.com/user-attachments/assets/048e0869-436f-4900-a587-54ac2aa841a9)
+![image](https://github.com/user-attachments/assets/bb7eb36c-f753-443c-9549-59524f5a4374)
+![image](https://github.com/user-attachments/assets/ff83cabd-5ce9-47d6-87ae-957a60194b7a)
 
 分工資訊
 朱昱維:分配小組工作，創建遊戲大綱，設計角色和怪物設定，
