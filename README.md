@@ -21,7 +21,6 @@ Equipment.h / Equipment.cpp：定義Equipment類，管理裝備屬性、稀有�
 main.cpp：程式入口，處理模式選擇和遊戲初始化。
 使用std::random_device和std::mt19937生成隨機怪物屬性、寶箱內容、裝備稀有度。   使用std::chrono計算遊戲時間，結束時顯示總秒數。   slowPrint函數實現逐字打印，提升沉浸感。
 
-玩法 
 運行程式後，選擇模式：輸入1進入戰鬥模式。主選單：選擇1繼續戰鬥，與當前或新生成的怪物戰鬥。選擇2進入地圖模式（若未收集25顆鑽石且未完成當前地圖）。選擇3查看並管理庫存（顯示裝備清單，輸入編號裝備或-1取消）。選擇4退出遊戲。
 戰鬥流程：
 查看怪物資訊（名稱、HP、攻擊力、防禦力）。
@@ -68,7 +67,7 @@ quit：退出地圖模式（僅在非戰鬥觸發時有效）。
 
 查看庫存中的裝備（顯示名稱、稀有度、屬性加成）。
 輸入編號裝備，自動替換同類型裝備（舊裝備進入庫存）。    </li>
-      <li><strong>程式如何安裝執行   </strong>1. 環境準備
+      <li><strong>程式如何安裝執行:  </strong>1. 環境準備
 作業系統：Windows（因程式使用Windows特有API）。
 編譯器：需要支援C++17的編譯器，如：
 MinGW（g++）
@@ -116,7 +115,7 @@ MinGW：
 ![image](https://github.com/user-attachments/assets/048e0869-436f-4900-a587-54ac2aa841a9)
 ![image](https://github.com/user-attachments/assets/bb7eb36c-f753-443c-9549-59524f5a4374)
 ![image](https://github.com/user-attachments/assets/ff83cabd-5ce9-47d6-87ae-957a60194b7a)    </li>
-      <li><strong>分工資訊   </strong>朱昱維:分配小組工作，創建遊戲大綱，設計角色和怪物設定，
+      <li><strong>分工資訊:   </strong>朱昱維:分配小組工作，創建遊戲大綱，設計角色和怪物設定，
 製作UML，連結角色和裝備
 
 魏康祐:負責處理裝備的部分,包含裝備的種類,稀有度,數值,特殊效果,能不能同時穿著各種裝備,
