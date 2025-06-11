@@ -11,14 +11,85 @@
 玩家（Player）和怪物（Monster）具有生命值（HP）、攻擊力（Attack）和防禦力（Defense）。HP降至0時角色死亡，遊戲結束（除非有傳說武器觸發復活效果）。玩家可通過裝備、寶箱或石頭效果提升屬性。
 裝備分為武器（WEAPON）、護甲（ARMOR）、飾品（ACCESSORY）、盾牌（SHIELD）和手套（GLOVES），有普通（COMMON）、稀有（RARE）、史詩（EPIC）、傳說（LEGENDARY）四種稀有度。裝備提供攻擊力、HP、防禦力加成，傳說裝備有特殊效果（如復活、反彈傷害、閃避、屬性提升）。裝備可能在戰鬥中損壞（依稀有度有10%-25%機率），損壞後失去效果。
 
-程式介紹、玩法 
+程式介紹玩法 
 
 Game.h / Game.cpp：核心遊戲邏輯，管理戰鬥模式、怪物生成、寶箱獎勵和遊戲流程。
 GameWithMap.h / GameWithMap.cpp：地圖模式邏輯，處理地圖生成、玩家移動、鑽石收集和問題回答。
 Character.h / Character.cpp：定義Character基類及其子類Player和Monster，管理角色屬性、裝備、戰鬥和狀態。
 Equipment.h / Equipment.cpp：定義Equipment類，管理裝備屬性、稀有度、元素和損壞/修復邏輯。
 main.cpp：程式入口，處理模式選擇和遊戲初始化。
-程式如何安裝執行、
+使用std::random_device和std::mt19937生成隨機怪物屬性、寶箱內容、裝備稀有度。   使用std::chrono計算遊戲時間，結束時顯示總秒數。   slowPrint函數實現逐字打印，提升沉浸感。
+
+玩法 
+運行程式後，選擇模式：輸入1進入戰鬥模式。主選單：選擇1繼續戰鬥，與當前或新生成的怪物戰鬥。選擇2進入地圖模式（若未收集25顆鑽石且未完成當前地圖）。選擇3查看並管理庫存（顯示裝備清單，輸入編號裝備或-1取消）。選擇4退出遊戲。
+戰鬥流程：
+查看怪物資訊（名稱、HP、攻擊力、防禦力）。
+選擇招式（1-4）或使用修復石（若持有且武器損壞）。
+根據招式和武器元素計算傷害，可能觸發爆擊。
+怪物反擊，玩家可能觸發傳說裝備效果（如閃避、反彈傷害、復活）。
+選擇繼續攻擊（輸入attack）或撤退（輸入retreat）。
+擊敗怪物後獲得分數和寶箱，繼續下一輪。
+
+地圖模式：
+在10x10地圖上移動，'P'表示玩家，'D'表示鑽石，'.'表示空地，'F'表示已收集的鑽石。
+輸入指令移動：
+wX：向上移動X步。
+sX：向下移動X步。
+aX：向左移動X步。
+dX：向右移動X步。
+quit：退出地圖模式（僅在非戰鬥觸發時有效）。
+移動到鑽石（'D'）時回答問題，答對回血15 HP，答錯扣血20 HP。
+收集2顆鑽石後完成階段，返回戰鬥模式。
+若HP降至0，遊戲結束。
+
+查看庫存中的裝備（顯示名稱、稀有度、屬性加成）。
+輸入編號裝備，自動替換同類型裝備（舊裝備進入庫存）。
+
+程式如何安裝執行
+
+1. 環境準備
+作業系統：Windows（因程式使用Windows特有API）。
+編譯器：需要支援C++17的編譯器，如：
+MinGW（g++）
+MSVC（Visual Studio）
+Clang
+開發環境：
+Visual Studio（推薦，支援Windows編譯和除錯）
+命令列工具（如MinGW搭配VS Code）
+依賴：無外部庫依賴，僅使用C++標準庫（iostream、vector、random、chrono等）。
+2. 安裝步驟
+安裝編譯器：
+Visual Studio：
+下載並安裝Visual Studio Community（免費版）：https://visualstudio.microsoft.com/
+選擇「使用C++的桌面開發」工作負載，確保包含MSVC編譯器。
+MinGW：
+下載MinGW：http://www.mingw.org/
+安裝g++和相關工具，將bin目錄（如C:\MinGW\bin）添加到系統環境變數PATH。
+準備程式碼：
+將提供的檔案（main.cpp、Game.h、Game.cpp、GameWithMap.h、GameWithMap.cpp、Character.h、Character.cpp、Equipment.h、Equipment.cpp）儲存到同一目錄（如game_project）。
+確認檔案編碼：
+確保所有檔案使用UTF-8編碼（因程式輸出中文）。
+在Visual Studio中預設支援，若使用其他編輯器（如VS Code），檢查檔案編碼並儲存為UTF-8。
+3. 編譯與執行
+使用Visual Studio：
+開啟Visual Studio，選擇「建立新專案」 -> 「空白專案 (C++)」。
+將所有.cpp和.h檔案加入專案（右鍵「方案總管」 -> 「新增」 -> 「現有項目」）。
+設置專案屬性：
+設定「C++語言標準」為C++17（屬性 -> C/C++ -> 語言）。
+確保目標平台為x64或x86（依系統）。
+按F5或點擊「建置並執行」編譯並運行程式。
+在控制台視窗中選擇遊戲模式並開始遊戲。
+4. 執行環境設置
+字元編碼：程式使用SetConsoleOutputCP(CP_UTF8)確保中文顯示正確。若中文顯示為亂碼：
+確認命令提示字元或終端機支援UTF-8。
+在Windows命令提示字元中運行chcp 65001設置UTF-8。
+輸入輸出：遊戲使用std::cin和std::cout，確保終端機支援交互式輸入。
+依賴檢查：若編譯失敗，檢查是否缺少C++17支援或Windows頭文件。
+5. 除錯與測試
+若程式崩潰，檢查：
+無效輸入（如非數字輸入導致std::cin失敗）。
+記憶體問題（std::unique_ptr應已避免大部分洩漏）。
+使用Visual Studio的除錯器或在程式中加入日誌（如std::cout輸出）排查問題。
 
 運行畫面截圖
 
